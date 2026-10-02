@@ -5,6 +5,8 @@ RUN docker-php-ext-install mysqli
 RUN a2dismod mpm_event mpm_worker || true \
     && a2enmod mpm_prefork rewrite
 
+RUN echo "=== ENABLED MPM MODULES ===" && ls -la /etc/apache2/mods-enabled/*mpm*
+
 COPY . /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html
