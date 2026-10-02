@@ -1,0 +1,8 @@
+flask
+flask-cors
+requests
+mysql-connector-python
+numpy
+torch
+transformers==5.6.2
+gunicorn

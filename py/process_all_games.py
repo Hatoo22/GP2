@@ -4,6 +4,7 @@ import mysql.connector
 import torch
 import numpy as np
 import re
+import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # =========================
@@ -11,14 +12,20 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 # =========================
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 8889,
-    "user": "root",
-    "password": "root",
-    "database": "dira_db",
+    "host": os.getenv("MYSQLHOST", "localhost"),
+    "port": int(os.getenv("MYSQLPORT", "8889")),
+    "user": os.getenv("MYSQLUSER", "root"),
+    "password": os.getenv("MYSQLPASSWORD", "root"),
+    "database": os.getenv("MYSQLDATABASE", "dira_db"),
 }
 
-MODEL_PATH = "../model/final_multilabel_model"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "..",
+    "model",
+    "final_multilabel_model"
+)
 
 MAX_REVIEWS_PER_GAME = 100
 GAME_LIMIT = 133 
