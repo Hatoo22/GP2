@@ -1,10 +1,12 @@
 import time
+import argparse
+from pathlib import Path
+from youtube_comments import fetch_youtube_comments, merge_unique, YouTubeError
 import requests
 import mysql.connector
 import torch
 import numpy as np
 import re
-import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # =========================
@@ -12,20 +14,14 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 # =========================
 
 DB_CONFIG = {
-    "host": os.getenv("MYSQLHOST", "localhost"),
-    "port": int(os.getenv("MYSQLPORT", "8889")),
-    "user": os.getenv("MYSQLUSER", "root"),
-    "password": os.getenv("MYSQLPASSWORD", "root"),
-    "database": os.getenv("MYSQLDATABASE", "dira_db"),
+    "host": "localhost",
+    "port": 8889,
+    "user": "root",
+    "password": "root",
+    "database": "dira_db",
 }
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "..",
-    "model",
-    "final_multilabel_model"
-)
+MODEL_PATH = str(Path(__file__).resolve().parent.parent / "final_multilabel_model")
 
 MAX_REVIEWS_PER_GAME = 100
 GAME_LIMIT = 133 
@@ -426,26 +422,19 @@ def save_no_comments_result(game_id):
 
 if __name__ == "__main__":
 
-    if REANALYZE_ALL:
-        cursor.execute("""
-        SELECT game_id, api_game_id, game_name
-        FROM games
-        WHERE api_game_id IS NOT NULL
-        AND api_game_id <> ''
-        ORDER BY game_id ASC
-        LIMIT %s
-        """, (GAME_LIMIT,))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--game-id', type=int, help='Process one game, including previously analyzed games')
+    parser.add_argument('--dry-run', action='store_true', help='Fetch and classify without database writes')
+    parser.add_argument('--refresh-youtube', action='store_true', help="Ignore this month's cache")
+    args = parser.parse_args()
+    cursor.execute("SELECT game_name FROM games")
+    catalog = [row['game_name'] for row in cursor.fetchall() if row['game_name']]
 
-    else:
-        cursor.execute("""
+    cursor.execute("""
         SELECT game_id, api_game_id, game_name
         FROM games
-        WHERE api_game_id IS NOT NULL
-        AND api_game_id <> ''
-        AND analysis_status = 'no_comments'
         ORDER BY game_id ASC
-        LIMIT %s
-        """, (GAME_LIMIT,))
+    """)
 
     games = cursor.fetchall()
 
@@ -463,10 +452,21 @@ if __name__ == "__main__":
             f"Steam AppID={steam_app_id}"
         )
 
-        comments = fetch_steam_reviews(
+        steam_comments = fetch_steam_reviews(
             steam_app_id,
             MAX_REVIEWS_PER_GAME
         )
+
+        try:
+            youtube_comments = fetch_youtube_comments(
+                game_name, catalog, clean_comment, is_valid_comment,
+                refresh=args.refresh_youtube
+            )
+        except YouTubeError as error:
+            print(f"Skipping game {game_id}: {error}. Existing database results preserved.")
+            continue
+        comments = merge_unique(steam_comments + youtube_comments, clean_comment, is_valid_comment)
+        print(f"Steam={len(steam_comments)}, YouTube={len(youtube_comments)}, merged unique={len(comments)}")
 
         if len(comments) == 0:
             print(
@@ -474,7 +474,8 @@ if __name__ == "__main__":
                 "Saving as New / No analysis."
             )
 
-            save_no_comments_result(game_id)
+            if not args.dry_run:
+                save_no_comments_result(game_id)
             continue
 
         print(
@@ -485,6 +486,10 @@ if __name__ == "__main__":
         scores, overall, level = analyze_comments(
             comments
         )
+
+        if args.dry_run:
+            print(f"DRY RUN: comments={len(comments)}, counts={scores}, overall={overall}, level={level}; database unchanged")
+            continue
 
         save_analyzed_result(
             game_id=game_id,
