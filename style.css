@@ -8268,3 +8268,124 @@ body.dark-mode #disableDuration option {
   border-color: rgba(255, 157, 61, 0.38);
   transform: translateY(-1px);
 }
+
+/* =========================================================
+   MOBILE FIXES (phones)
+   ========================================================= */
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .page {
+    width: calc(100% - 16px);
+    margin: 8px auto;
+    border-radius: 22px;
+  }
+
+  /* Header: logo on its own row, links wrap underneath */
+  .nav {
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  .nav .logo {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .links {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 14px;
+    font-size: 11px;
+  }
+
+  .links a:not(.btn) {
+    padding: 6px 0;
+  }
+
+  .links .btn {
+    min-height: 34px;
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+
+  .links .icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  /* Home dashboard: 2 x 2 instead of 4 in a row */
+  .dashStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  /* About page: features, users and team stack nicely */
+  .featureItems,
+  .users .featureItems {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 12px;
+  }
+
+  .teamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .teamCard {
+    padding: 20px 12px;
+  }
+
+  /* Games page: search on its own row, filters side by side below it */
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .toolbar .search {
+    flex: 1 1 100%;
+  }
+
+  .toolbar .filterGroup {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .toolbar select {
+    width: 100%;
+  }
+
+  /* Tables scroll sideways instead of being cut off */
+  .tableWrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tableWrap table {
+    min-width: 600px;
+  }
+}
+
+/* Tablets (iPad portrait): about page grids fit the screen */
+@media (min-width: 761px) and (max-width: 960px) {
+  .featureItems,
+  .users .featureItems {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  .teamGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
