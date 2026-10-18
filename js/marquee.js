@@ -128,18 +128,49 @@
     }
 
     // ---------- Interactions ----------
-    wrap.addEventListener("mouseenter", () => { hovering = true; });
-    wrap.addEventListener("mouseleave", () => {
+    // Mouse only: hover pauses, drag scrolls. Touch scrolls natively.
+    wrap.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "mouse") hovering = true;
+    });
+    wrap.addEventListener("pointerleave", (e) => {
+      if (e.pointerType !== "mouse") return;
       hovering = false;
       pauseFor(800);
     });
 
-    wrap.addEventListener("touchstart", () => {
+    // ----- Touch (phones / tablets) -----
+    let touchX = 0, touchY = 0, touchTime = 0, touchMoved = false;
+
+    wrap.addEventListener("touchstart", (e) => {
       pointerDown = true;
+      touchMoved = false;
+      touchX = e.touches[0].clientX;
+      touchY = e.touches[0].clientY;
+      touchTime = Date.now();
       pauseFor(RESUME_DELAY);
     }, { passive: true });
 
-    wrap.addEventListener("touchend", () => {
+    wrap.addEventListener("touchmove", (e) => {
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - touchX) > 10 || Math.abs(t.clientY - touchY) > 10) {
+        touchMoved = true;
+      }
+    }, { passive: true });
+
+    wrap.addEventListener("touchend", (e) => {
+      pointerDown = false;
+      pauseFor(RESUME_DELAY);
+
+      // A quick tap on a link (e.g. "View Details") opens it directly,
+      // so the moving carousel can never swallow the tap.
+      const link = e.target.closest("a[href]");
+      if (link && !touchMoved && Date.now() - touchTime < 600) {
+        e.preventDefault();
+        window.location.href = link.href;
+      }
+    }, { passive: false });
+
+    wrap.addEventListener("touchcancel", () => {
       pointerDown = false;
       pauseFor(RESUME_DELAY);
     }, { passive: true });
@@ -153,35 +184,38 @@
       scrollEndTimer = setTimeout(wrapAround, 120);
     }, { passive: true });
 
-    wrap.addEventListener("mousedown", (e) => {
-      if (e.button !== 0) return;
+    // ----- Mouse drag (desktop) -----
+    wrap.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
       dragging = true;
       dragMoved = false;
       dragStartX = e.clientX;
       dragStartScroll = wrap.scrollLeft;
-      wrap.classList.add("is-dragging");
       pauseFor(RESUME_DELAY);
     });
 
-    window.addEventListener("mousemove", (e) => {
-      if (!dragging) return;
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging || e.pointerType !== "mouse") return;
       const dx = e.clientX - dragStartX;
-      if (Math.abs(dx) > 5) dragMoved = true;
+      if (!dragMoved && Math.abs(dx) > 5) {
+        dragMoved = true;
+        wrap.classList.add("is-dragging");
+      }
       if (dragMoved) {
         e.preventDefault();
         wrap.scrollLeft = dragStartScroll - dx;
       }
     });
 
-    window.addEventListener("mouseup", () => {
-      if (!dragging) return;
+    window.addEventListener("pointerup", (e) => {
+      if (!dragging || e.pointerType !== "mouse") return;
       dragging = false;
       wrap.classList.remove("is-dragging");
       pauseFor(RESUME_DELAY);
       wrapAround();
     });
 
-    // A drag should not count as a click on "View Details"
+    // A mouse drag should not count as a click on "View Details"
     wrap.addEventListener("click", (e) => {
       if (dragMoved) {
         e.preventDefault();
