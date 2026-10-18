@@ -8389,3 +8389,234 @@ body.dark-mode #disableDuration option {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* =========================================================
+   GAMES CAROUSEL — moves on its own, user can swipe/drag/arrow
+   (replaces the old CSS-only marquee animation)
+   ========================================================= */
+.marquee-shell {
+  position: relative;
+}
+
+.marquee-wrap {
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  outline: none;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.marquee-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.marquee-wrap.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.marquee-wrap.is-dragging a,
+.marquee-wrap.is-dragging img {
+  pointer-events: none;
+}
+
+.marquee-track {
+  animation: none !important;
+  transform: none !important;
+}
+
+.marquee-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(50, 197, 210, 0.45);
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  font-size: 30px;
+  line-height: 1;
+  padding: 0 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.14), 0 0 14px rgba(50, 197, 210, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.marquee-arrow:hover {
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18), 0 0 20px rgba(50, 197, 210, 0.45);
+}
+
+.marquee-arrow:focus-visible {
+  outline: 3px solid rgba(50, 197, 210, 0.7);
+  outline-offset: 2px;
+}
+
+.marquee-arrow--prev { left: -8px; }
+.marquee-arrow--next { right: -8px; }
+
+.marquee-shell.no-arrows .marquee-arrow {
+  display: none;
+}
+
+body.dark-mode .marquee-arrow {
+  background: rgba(20, 20, 28, 0.9);
+  color: #fff;
+  border-color: rgba(255, 157, 61, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 760px) {
+  .marquee-wrap {
+    padding-top: 24px;
+    padding-bottom: 20px;
+  }
+
+  .marquee-card {
+    width: 78vw;
+    min-width: 78vw;
+    max-width: 300px;
+  }
+
+  .marquee-track .card {
+    height: auto;
+    min-height: 440px;
+  }
+
+  .marquee-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 26px;
+  }
+
+  .marquee-arrow--prev { left: -4px; }
+  .marquee-arrow--next { right: -4px; }
+}
+
+/* =========================================================
+   GAME DETAILS — same New / Risk pills as the game cards
+   ========================================================= */
+.game-hero-thumb {
+  position: relative;
+}
+
+.game-hero-thumb .top-pills {
+  top: 18px;
+  left: 18px;
+  right: 18px;
+}
+
+.game-hero-thumb .top-pills .pill {
+  font-size: 12px;
+  padding: 7px 16px;
+}
+
+.game-hero-thumb .top-pills:empty {
+  display: none;
+}
+
+/* =========================================================
+   MORE PHONE FIXES
+   ========================================================= */
+@media (max-width: 760px) {
+  /* Game details: Track / Safer Alternative / Report fit the screen */
+  .detailActions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .detailActions .btn {
+    flex: 1 1 calc(50% - 10px);
+    width: auto;
+    min-width: 0;
+    height: 48px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  .detailActions .btn:last-child:nth-child(odd) {
+    flex-basis: 100%;
+  }
+
+  .game-hero-thumb {
+    height: 200px;
+  }
+
+  .game-hero-thumb .top-pills .pill {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  /* Profile: form stays inside its card */
+  .profileCard {
+    width: 100%;
+    margin: 24px auto;
+    padding: 28px 18px;
+  }
+
+  .profileCard .row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .profileCard input,
+  .profileCard select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* About page: floating circles stay behind the text */
+  .orbits .orb {
+    transform: scale(0.55);
+    opacity: 0.45;
+  }
+
+  .orbits > div {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Tables: show that they scroll sideways */
+  .tableWrap {
+    max-width: 100%;
+  }
+
+  /* Admin search boxes use the full width */
+  .admin-search,
+  .section input[type="search"],
+  .section input[type="text"][id*="earch"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Helper robot: smaller so it doesn't cover cards */
+  body:not(.authPage) .dir-guardian {
+    transform: scale(0.6);
+    transform-origin: left bottom;
+  }
+
+  /* Game cards grow to fit their content (View Details never cut) */
+  .gamesGrid .card {
+    height: auto;
+    min-height: 480px;
+  }
+
+  /* Bigger touch targets on cards */
+  .favoriteIconBtn,
+  .cardQuickActions button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
