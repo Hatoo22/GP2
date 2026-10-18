@@ -46,7 +46,8 @@ async function loadFeaturedGames() {
   }
 
   const games = data.games || [];
-  track.innerHTML = [...games, ...games].map(card).join("");
+  const html = games.map(card).join("");
+  renderMarquee(track, html + html + html, games.length, true);
 }
 
 loadFeaturedGames();

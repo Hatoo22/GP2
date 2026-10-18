@@ -142,6 +142,21 @@ function labelPercent(count, total) {
   return Number(percent.toFixed(2));
 }
 
+// Same pills as the game cards: "New" for unanalyzed games,
+// otherwise "<percent>% Risk" + the risk level
+function renderDetailPills(game, isNew) {
+  const box = document.getElementById("gameDetailPills");
+  if (!box) return;
+
+  const level = game.overall_risk_level || "Low";
+  const riskClass = `risk-${String(level).toLowerCase()}`;
+
+  box.innerHTML = isNew
+    ? `<span class="pill new-pill">New</span>`
+    : `<span class="pill">${game.overall_risk_percent ?? 0}% Risk</span>
+       <span class="pill ${riskClass}">${level}</span>`;
+}
+
 async function loadGameDetails() {
   if (!gameId) {
     alert("Missing game_id in URL. Open this page from View Details button.");
@@ -165,6 +180,8 @@ async function loadGameDetails() {
     const isNoAnalysis =
   game.analysis_status !== "analyzed" ||
   Number(game.comments_count || 0) === 0;
+
+renderDetailPills(game, isNoAnalysis);
 
 const noAnalysisMessage = document.getElementById("noAnalysisMessage");
 const detailMetrics = document.querySelector(".detailMetrics");

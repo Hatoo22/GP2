@@ -47,13 +47,14 @@ const riskClass = isNew ? "new-pill" : `risk-${String(game.overall_risk_level ||
   `;
 }
 
-function renderGames(list) {
+function renderGames(list, loop = true) {
   if (list.length === 0) {
-    recentGames.innerHTML = `<p class="mini">No games found.</p>`;
+    renderMarquee(recentGames, `<p class="mini">No games found.</p>`, 0, false);
     return;
   }
 
-  recentGames.innerHTML = list.map(card).join("");
+  const html = list.map(card).join("");
+  renderMarquee(recentGames, loop ? html + html + html : html, list.length, loop);
 }
 
 async function loadHome() {
@@ -75,7 +76,7 @@ async function loadHome() {
     submittedReportsCount.textContent = data.stats.submitted_reports;
 
     recentGamesList = data.recent_games || [];
-    renderGames([...recentGamesList, ...recentGamesList]);
+    renderGames(recentGamesList);
 
   } catch (error) {
     recentGames.innerHTML = `<p class="mini">Cannot load home data.</p>`;
@@ -87,7 +88,7 @@ homeSearch.addEventListener("input", async function () {
 
   if (value === "") {
     recentGames.classList.remove("is-searching");
-    renderGames([...recentGamesList, ...recentGamesList]);
+    renderGames(recentGamesList);
     return;
   }
 
@@ -96,7 +97,7 @@ homeSearch.addEventListener("input", async function () {
   const res = await fetch(`api/search-games.php?q=${encodeURIComponent(value)}`);
   const data = await res.json();
 
-  renderGames(data.games || []);
+  renderGames(data.games || [], false);
 });
 
 loadHome();
