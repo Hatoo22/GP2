@@ -332,8 +332,8 @@ function setTrackButton(tracked) {
   isTracked = !!tracked;
   const btn = document.getElementById("trackGameBtn");
   if (!btn) return;
-  btn.textContent = isTracked ? "Tracked ✓" : "Track";
-  btn.classList.toggle("tracked", isTracked);
+  btn.textContent = isTracked ? "Tracked" : "Track";
+  btn.classList.toggle("is-tracked", isTracked);
 }
 
 function untrackGameFromDetails() {
