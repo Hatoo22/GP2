@@ -8620,3 +8620,97 @@ body.dark-mode .marquee-arrow {
     min-height: 44px;
   }
 }
+
+/* =========================================================
+   PHONE FIXES — round 2
+   ========================================================= */
+@media (max-width: 760px) {
+  /* Top bar: row 1 = page links, row 2 = Log out + theme + profile */
+  .links {
+    gap: 8px 12px;
+  }
+
+  .links > a:not(.btn):not(.icon) {
+    order: 1;
+  }
+
+  .links::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .links > .btn,
+  .links > .icon,
+  .links > button {
+    order: 3;
+  }
+
+  /* "Why DIR'A?" bubbles: neat centered group instead of flying off-screen */
+  .why {
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0 20px;
+  }
+
+  .why .bubble {
+    position: static;
+    width: 136px !important;
+    height: 136px !important;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .why .b1 {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  /* Comparison: swipe between full-size game cards */
+  .comparisonGrid,
+  .comparisonGrid--three,
+  .comparisonGrid--many {
+    display: flex !important;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 4px 16px;
+    margin: 0 -4px;
+    scrollbar-width: thin;
+  }
+
+  .comparisonGrid .compare-card {
+    flex: 0 0 82%;
+    scroll-snap-align: center;
+    padding: 30px 18px 18px;
+  }
+
+  .comparisonGrid .compareImageWrap,
+  .comparisonGrid .compare-card .thumb {
+    height: 170px !important;
+    min-height: 0 !important;
+    max-height: 170px;
+  }
+
+  .comparisonGrid .compare-card .thumb {
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .comparisonGrid .compare-card h3 {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .comparisonGrid .risk-circle {
+    width: 110px;
+    height: 110px;
+  }
+}
