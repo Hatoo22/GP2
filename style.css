@@ -8714,3 +8714,25 @@ body.dark-mode .marquee-arrow {
     height: 110px;
   }
 }
+
+/* =========================================================
+   ADMIN TABLES — header sticks to the very top of the box,
+   so scrolled rows never show above it
+   ========================================================= */
+.admin-games-table,
+.admin-dashboard-table,
+.admin-users-table,
+.admin-employees-table,
+.admin-reports-table {
+  padding-top: 0 !important;
+}
+
+.admin-games-table thead th,
+.admin-dashboard-table thead th,
+.admin-users-table thead th,
+.admin-employees-table thead th,
+.admin-reports-table thead th {
+  top: 0;
+  z-index: 20;
+  background-clip: padding-box;
+}
