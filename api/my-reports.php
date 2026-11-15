@@ -20,9 +20,17 @@ if (!$user_id) {
 $sql = "
 SELECT 
   r.report_id,
+  r.game_id,
   g.game_name,
+  g.image_url AS game_image,
   r.title,
   r.behavior_other AS description,
+  r.behavior_toxic,
+  r.behavior_bullying,
+  r.behavior_hate,
+  r.behavior_sexual,
+  r.behavior_threat,
+  r.severity,
   r.status,
   r.date_reported
 FROM reports r
@@ -61,4 +69,4 @@ echo json_encode([
 
 $stmt->close();
 $conn->close();
-?>
+?>

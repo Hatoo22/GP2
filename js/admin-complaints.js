@@ -1,788 +1,346 @@
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    const tableBody =
-      document.getElementById(
-        "complaintsTable"
-      );
-
-    const searchInput =
-      document.getElementById(
-        "complaintSearch"
-      );
-
-    const complaintsCount =
-      document.getElementById(
-        "complaintsCount"
-      );
-
-
-    const modal =
-      document.getElementById(
-        "complaintModal"
-      );
-
-    const closeModal =
-      document.getElementById(
-        "closeComplaintModal"
-      );
-
-
-    let complaints = [];
-
-
-
-    /* =========================
-       ESCAPE
-    ========================== */
-
-    function escapeHtml(value) {
-
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-
-    /* =========================
-       DATE
-    ========================== */
-
-    function formatDate(value) {
-
-      if (!value) {
-        return "—";
-      }
-
-
-      const date =
-        new Date(
-          String(value)
-            .replace(" ", "T")
-        );
-
-
-      if (isNaN(date)) {
-        return value;
-      }
-
-
-      return date.toLocaleDateString(
-        "en-GB",
-        {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }
-      );
-    }
-
-
-
-    /* =========================
-       BEHAVIORS
-    ========================== */
-
-    function getBehaviors(complaint) {
-
-      const behaviors = [];
-
-
-      if (
-        Number(
-          complaint.behavior_toxic
-        ) === 1
-      ) {
-        behaviors.push(
-          "Other Toxicity"
-        );
-      }
-
-
-      if (
-        Number(
-          complaint.behavior_bullying
-        ) === 1
-      ) {
-        behaviors.push(
-          "Bullying"
-        );
-      }
-
-
-      if (
-        Number(
-          complaint.behavior_hate
-        ) === 1
-      ) {
-        behaviors.push(
-          "Hate Speech"
-        );
-      }
-
-
-      if (
-        Number(
-          complaint.behavior_sexual
-        ) === 1
-      ) {
-        behaviors.push(
-          "Sexual Harassment"
-        );
-      }
-
-
-      if (
-        Number(
-          complaint.behavior_threat
-        ) === 1
-      ) {
-        behaviors.push(
-          "Threat"
-        );
-      }
-
-
-      if (
-        complaint.behavior_other &&
-        complaint.behavior_other.trim()
-      ) {
-        behaviors.push(
-          "Other"
-        );
-      }
-
-
-      return behaviors.length
-        ? behaviors.join(", ")
-        : "—";
-    }
-
-
-
-    /* =========================
-       LOCATION
-    ========================== */
-
-    function getLocations(complaint) {
-
-      const locations = [];
-
-
-      if (
-        Number(
-          complaint.location_chat
-        ) === 1
-      ) {
-        locations.push("Chat");
-      }
-
-
-      if (
-        Number(
-          complaint.location_gameplay
-        ) === 1
-      ) {
-        locations.push("Gameplay");
-      }
-
-
-      if (
-        Number(
-          complaint.location_community
-        ) === 1
-      ) {
-        locations.push(
-          "Community"
-        );
-      }
-
-
-      return locations.length
-        ? locations.join(", ")
-        : "—";
-    }
-
-
-
-    /* =========================
-       RENDER
-    ========================== */
-
-    function renderComplaints(list) {
-
-      tableBody.innerHTML =
-        "";
-
-
-      complaintsCount.textContent =
-        `${list.length} ${
-          list.length === 1
-            ? "Complaint"
-            : "Complaints"
-        }`;
-
-
-      if (!list.length) {
-
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              No complaints found.
-            </td>
-          </tr>
-        `;
-
-        return;
-      }
-
-
-      list.forEach(
-        complaint => {
-
-          const row =
-            document.createElement(
-              "tr"
-            );
-
-
-          const severity =
-            String(
-              complaint.severity ||
-              "—"
-            );
-
-
-          row.innerHTML = `
-
-            <td>
-
-              <strong>
-                ${escapeHtml(
-                  complaint.title ||
-                  "Untitled Complaint"
-                )}
-              </strong>
-
-            </td>
-
-
-            <td>
-
-              ${escapeHtml(
-                complaint.game_name ||
-                "Unknown Game"
-              )}
-
-            </td>
-
-
-            <td>
-
-              ${escapeHtml(
-                complaint.user_name ||
-                "Unknown User"
-              )}
-
-            </td>
-
-
-            <td>
-
-              ${escapeHtml(
-                getBehaviors(
-                  complaint
-                )
-              )}
-
-            </td>
-
-
-            <td>
-
-              <span
-                class="risk-badge ${escapeHtml(
-                  severity.toLowerCase()
-                )}"
-              >
-                ${escapeHtml(
-                  severity
-                )}
-              </span>
-
-            </td>
-
-
-            <td>
-
-              ${formatDate(
-                complaint.date_reported
-              )}
-
-            </td>
-
-
-            <td>
-
-              <div class="admin-table-actions">
-
-                <button
-                  class="admin-action-btn view-complaint"
-                  type="button"
-                  data-id="${complaint.report_id}"
-                >
-                  View
-                </button>
-
-
-                <button
-                  class="admin-action-btn delete delete-complaint"
-                  type="button"
-                  data-id="${complaint.report_id}"
-                >
-                  Delete
-                </button>
-
-              </div>
-
-            </td>
-
-          `;
-
-
-          tableBody.appendChild(
-            row
-          );
-
-        }
-      );
-
-    }
-
-
-
-    /* =========================
-       SEARCH
-    ========================== */
-
-    function applySearch() {
-
-      const query =
-        searchInput.value
-          .trim()
-          .toLowerCase();
-
-
-      const filtered =
-        complaints.filter(
-          complaint => {
-
-            const text = [
-
-              complaint.title,
-              complaint.game_name,
-              complaint.user_name,
-              complaint.user_email,
-              getBehaviors(
-                complaint
-              )
-
-            ]
-              .join(" ")
-              .toLowerCase();
-
-
-            return text.includes(
-              query
-            );
-
-          }
-        );
-
-
-      renderComplaints(
-        filtered
-      );
-    }
-
-
-
-    /* =========================
-       VIEW
-    ========================== */
-
-    function openComplaint(
-      complaint
-    ) {
-
-      document.getElementById(
-        "modalComplaintTitle"
-      ).textContent =
-        complaint.title ||
-        "Complaint";
-
-
-      document.getElementById(
-        "modalGame"
-      ).textContent =
-        complaint.game_name ||
-        "—";
-
-
-      document.getElementById(
-        "modalUser"
-      ).textContent =
-        complaint.user_name ||
-        "—";
-
-
-      document.getElementById(
-        "modalEmail"
-      ).textContent =
-        complaint.user_email ||
-        "—";
-
-
-      document.getElementById(
-        "modalStatus"
-      ).textContent =
-        complaint.status ||
-        "—";
-
-
-      document.getElementById(
-        "modalBehavior"
-      ).textContent =
-        getBehaviors(
-          complaint
-        );
-
-
-      document.getElementById(
-        "modalSeverity"
-      ).textContent =
-        complaint.severity ||
-        "—";
-
-
-      document.getElementById(
-        "modalLocation"
-      ).textContent =
-        getLocations(
-          complaint
-        );
-
-
-      document.getElementById(
-        "modalDate"
-      ).textContent =
-        formatDate(
-          complaint.date_reported
-        );
-
-
-      const otherBox =
-        document.getElementById(
-          "otherBehaviorBox"
-        );
-
-
-      const otherText =
-        document.getElementById(
-          "modalOther"
-        );
-
-
-      if (
-        complaint.behavior_other &&
-        complaint.behavior_other.trim()
-      ) {
-
-        otherBox.hidden =
-          false;
-
-        otherText.textContent =
-          complaint.behavior_other;
-
-      } else {
-
-        otherBox.hidden =
-          true;
-
-        otherText.textContent =
-          "";
-      }
-
-
-      modal.classList.add(
-        "show"
-      );
-    }
-
-
-
-    /* =========================
-       TABLE ACTIONS
-    ========================== */
-
-    tableBody.addEventListener(
-      "click",
-      async event => {
-
-        const viewButton =
-          event.target.closest(
-            ".view-complaint"
-          );
-
-
-        if (viewButton) {
-
-          const complaint =
-            complaints.find(
-              item =>
-                String(
-                  item.report_id
-                ) ===
-                String(
-                  viewButton.dataset.id
-                )
-            );
-
-
-          if (complaint) {
-
-            openComplaint(
-              complaint
-            );
-          }
-
-
-          return;
-        }
-
-
-
-        const deleteButton =
-          event.target.closest(
-            ".delete-complaint"
-          );
-
-
-        if (!deleteButton) {
-          return;
-        }
-
-
-        const id =
-          deleteButton.dataset.id;
-
-
-        const complaint =
-          complaints.find(
-            item =>
-              String(
-                item.report_id
-              ) ===
-              String(id)
-          );
-
-
-        if (!complaint) {
-          return;
-        }
-
-
-        const confirmed =
-          confirm(
-            `Delete complaint "${complaint.title}"?`
-          );
-
-
-        if (!confirmed) {
-          return;
-        }
-
-
-        try {
-
-          const response =
-            await fetch(
-              "api/admin-complaints.php",
-              {
-
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify({
-                    action:
-                      "delete",
-
-                    report_id:
-                      complaint.report_id
-                  })
-
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (!data.success) {
-
-            throw new Error(
-              data.message ||
-              "Unable to delete complaint."
-            );
-          }
-
-
-          complaints =
-            complaints.filter(
-              item =>
-                String(
-                  item.report_id
-                ) !==
-                String(
-                  complaint.report_id
-                )
-            );
-
-
-          applySearch();
-
-
-        } catch (error) {
-
-          console.error(
-            error
-          );
-
-
-          alert(
-            error.message ||
-            "Unable to delete complaint."
-          );
-        }
-
-      }
-    );
-
-
-
-    /* =========================
-       MODAL CLOSE
-    ========================== */
-
-    closeModal.addEventListener(
-      "click",
-      () => {
-
-        modal.classList.remove(
-          "show"
-        );
-
-      }
-    );
-
-
-    modal.addEventListener(
-      "click",
-      event => {
-
-        if (
-          event.target === modal
-        ) {
-
-          modal.classList.remove(
-            "show"
-          );
-        }
-
-      }
-    );
-
-
-
-    /* =========================
-       SEARCH EVENT
-    ========================== */
-
-    searchInput.addEventListener(
-      "input",
-      applySearch
-    );
-
-
-
-    /* =========================
-       LOAD
-    ========================== */
-
-    async function loadComplaints() {
-
-      try {
-
-        const response =
-          await fetch(
-            "api/admin-complaints.php"
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (!data.success) {
-
-          throw new Error(
-            data.message ||
-            "Unable to load complaints."
-          );
-        }
-
-
-        complaints =
-          data.complaints || [];
-
-
-        renderComplaints(
-          complaints
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          error
-        );
-
-
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              Unable to load complaints.
-            </td>
-          </tr>
-        `;
-
-      }
-
-    }
-
-
-    loadComplaints();
-
+/* =========================================================
+   ADMIN — COMPLAINTS MANAGEMENT
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
+
+  const tableBody = $("complaintsTable");
+  const searchInput = $("complaintSearch");
+  const tabs = $("acTabs");
+  const severityChips = $("severityChips");
+  const pager = $("acPages");
+  const showing = $("acShowing");
+
+  const modal = $("complaintModal");
+  const deleteArea = $("deleteArea");
+
+  const PAGE_SIZE = 10;
+  const STATUSES = ["Pending", "Reviewing", "Resolved"];
+  const STATUS_COLORS = { Pending: "#f59e0b", Reviewing: "#3b82f6", Resolved: "#22c55e" };
+  const SEVERITY_COLORS = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
+  const nf = new Intl.NumberFormat("en-US");
+
+  let complaints = [];
+  let statusFilter = "all";
+  let severityFilter = "all";
+  let page = 1;
+  let current = null;
+
+  /* ---------- helpers ---------- */
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
-);
+
+  function formatDate(value, withTime = false) {
+    if (!value) return "—";
+    const date = new Date(String(value).replace(" ", "T"));
+    if (isNaN(date)) return value;
+    const opts = { day: "2-digit", month: "short", year: "numeric" };
+    if (withTime) Object.assign(opts, { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleString("en-GB", opts);
+  }
+
+  function normStatus(s) {
+    const v = String(s || "Pending").trim().toLowerCase();
+    return STATUSES.find((x) => x.toLowerCase() === v) || "Pending";
+  }
+
+  const normSeverity = (s) => String(s || "").trim().toLowerCase();
+  const isSpam = (c) => Number(c.is_spam) === 1;
+  const spamReasons = (c) => {
+    try { const r = JSON.parse(c.spam_reasons || "[]"); return Array.isArray(r) ? r : []; }
+    catch { return []; }
+  };
+
+  function getBehaviors(c) {
+    const list = [];
+    if (Number(c.behavior_toxic) === 1) list.push("Toxic language");
+    if (Number(c.behavior_bullying) === 1) list.push("Bullying");
+    if (Number(c.behavior_hate) === 1) list.push("Hate speech");
+    if (Number(c.behavior_sexual) === 1) list.push("Sexual harassment");
+    if (Number(c.behavior_threat) === 1) list.push("Threats");
+    if (c.behavior_other && String(c.behavior_other).trim()) list.push("Other");
+    return list;
+  }
+
+  function getLocations(c) {
+    const list = [];
+    if (Number(c.location_chat) === 1) list.push("Chat");
+    if (Number(c.location_gameplay) === 1) list.push("Gameplay");
+    if (Number(c.location_community) === 1) list.push("Community");
+    return list;
+  }
+
+  function initials(name) {
+    const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] || "?") + (parts[1]?.[0] || "")).toUpperCase();
+  }
+
+  function hue(seed) {
+    let h = 0;
+    for (const ch of String(seed)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return h;
+  }
+
+  const severityPill = (sev) => {
+    const s = normSeverity(sev);
+    if (!s) return `<span class="ag-muted">—</span>`;
+    return `<span class="ad-pill" style="--c:${SEVERITY_COLORS[s] || "#94a3b8"}">${escapeHtml(s.charAt(0).toUpperCase() + s.slice(1))}</span>`;
+  };
+
+  const statusPill = (st) => {
+    const s = normStatus(st);
+    return `<span class="au-pill" style="--c:${STATUS_COLORS[s]}"><i></i>${s}</span>`;
+  };
+
+  const tags = (list, max = 99) => {
+    if (!list.length) return `<span class="ag-muted">—</span>`;
+    const shown = list.slice(0, max).map((x) => `<span>${escapeHtml(x)}</span>`).join("");
+    const more = list.length > max ? `<span>+${list.length - max}</span>` : "";
+    return shown + more;
+  };
+
+  /* ---------- counts ---------- */
+  function updateCounts() {
+    const c = { all: 0, Pending: 0, Reviewing: 0, Resolved: 0, spam: 0 };
+    complaints.forEach((x) => {
+      if (isSpam(x)) { c.spam++; return; }
+      c.all++;
+      c[normStatus(x.status)]++;
+    });
+    $("cntSpam").textContent = nf.format(c.spam);
+    $("cntAll").textContent = nf.format(c.all);
+    $("cntPending").textContent = nf.format(c.Pending);
+    $("cntReviewing").textContent = nf.format(c.Reviewing);
+    $("cntResolved").textContent = nf.format(c.Resolved);
+  }
+
+  /* ---------- render ---------- */
+  function getList() {
+    const q = searchInput.value.trim().toLowerCase();
+    return complaints.filter((c) => {
+      if (statusFilter === "spam") { if (!isSpam(c)) return false; }
+      else {
+        if (isSpam(c)) return false;
+        if (statusFilter !== "all" && normStatus(c.status) !== statusFilter) return false;
+      }
+      if (severityFilter !== "all" && normSeverity(c.severity) !== severityFilter) return false;
+      if (!q) return true;
+      return [c.title, c.game_name, c.user_name, c.user_email, getBehaviors(c).join(" ")]
+        .join(" ").toLowerCase().includes(q);
+    });
+  }
+
+  function rowHtml(c) {
+    const img = c.game_image
+      ? `<img class="ac-thumb" src="${escapeHtml(c.game_image)}" alt="" loading="lazy">`
+      : `<span class="ac-thumb ag-thumb--empty">🎮</span>`;
+    return `
+      <tr class="ac-row" data-id="${escapeHtml(c.report_id)}">
+        <td>
+          <div class="ac-title">
+            <strong>${escapeHtml(c.title || "Untitled complaint")}</strong>
+            <span>${escapeHtml(c.user_name || "Unknown user")} · ${formatDate(c.date_reported)}</span>
+            ${isSpam(c) ? `<span class="ac-spam-reason">⚑ ${escapeHtml(spamReasons(c)[0] || "Marked as spam")}</span>` : ""}
+          </div>
+        </td>
+        <td>
+          <div class="ac-game-cell">${img}<span>${escapeHtml(c.game_name || "Unknown game")}</span></div>
+        </td>
+        <td><div class="ag-genres">${tags(getBehaviors(c), 2)}</div></td>
+        <td>${severityPill(c.severity)}</td>
+        <td>${statusPill(c.status)}</td>
+        <td class="ag-right"><button class="ag-view view-complaint" type="button" data-id="${escapeHtml(c.report_id)}">View →</button></td>
+      </tr>`;
+  }
+
+  function render() {
+    updateCounts();
+    const list = getList();
+    const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    page = Math.min(page, pages);
+    const start = (page - 1) * PAGE_SIZE;
+    const slice = list.slice(start, start + PAGE_SIZE);
+
+    tableBody.innerHTML = slice.length
+      ? slice.map(rowHtml).join("")
+      : `<tr><td colspan="6" class="ad-empty">${complaints.length ? "No complaints match your filters." : "No complaints yet 🎉"}</td></tr>`;
+
+    showing.textContent = list.length
+      ? `Showing ${start + 1}–${start + slice.length} of ${nf.format(list.length)} complaints`
+      : "";
+
+    const nums = new Set([1, pages, page - 1, page, page + 1]);
+    const visible = [...nums].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
+    let html = `<button type="button" data-page="${page - 1}" ${page === 1 ? "disabled" : ""} aria-label="Previous page">‹</button>`;
+    visible.forEach((n, i) => {
+      if (i && n - visible[i - 1] > 1) html += `<span class="ag-gap">…</span>`;
+      html += `<button type="button" data-page="${n}" class="${n === page ? "is-active" : ""}">${n}</button>`;
+    });
+    html += `<button type="button" data-page="${page + 1}" ${page === pages ? "disabled" : ""} aria-label="Next page">›</button>`;
+    pager.innerHTML = pages > 1 ? html : "";
+  }
+
+  /* ---------- details panel ---------- */
+  function resetDeleteArea() {
+    deleteArea.innerHTML = `<button type="button" class="au-btn au-btn--danger" id="deleteComplaintBtn">Delete complaint</button>`;
+  }
+
+  function paintSpam(c) {
+    const box = $("spamBox");
+    const reasons = spamReasons(c);
+    box.hidden = !isSpam(c);
+    $("spamReasons").innerHTML = reasons.length
+      ? reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join("")
+      : `<li>Marked as spam by an employee</li>`;
+    $("spamScore").textContent = c.spam_override === "spam" ? "Marked by an employee" : (c.spam_score != null ? `Spam score ${c.spam_score}/100` : "");
+  }
+
+  function openComplaint(c) {
+    current = c;
+    $("modalId").textContent = c.report_id;
+    $("modalComplaintTitle").textContent = c.title || "Untitled complaint";
+    $("modalDate").textContent = `Submitted ${formatDate(c.date_reported, true)}`;
+
+    $("modalGameBox").innerHTML = `
+      ${c.game_image ? `<img src="${escapeHtml(c.game_image)}" alt="">` : `<span class="ac-thumb ag-thumb--empty">🎮</span>`}
+      <div>
+        <span class="ac-label">Game</span>
+        <strong>${escapeHtml(c.game_name || "Unknown game")}</strong>
+      </div>
+      ${c.game_id ? `<a class="ag-view" href="game-details.html?game_id=${encodeURIComponent(c.game_id)}">Open game →</a>` : ""}`;
+
+    paintSpam(c);
+    $("modalSeverity").innerHTML = severityPill(c.severity);
+    $("modalLocation").innerHTML = tags(getLocations(c));
+    $("modalBehavior").innerHTML = tags(getBehaviors(c));
+
+    const other = String(c.behavior_other || "").trim();
+    $("otherBehaviorBox").hidden = !other;
+    $("modalOther").textContent = other;
+
+    const avatar = $("modalAvatar");
+    avatar.textContent = initials(c.user_name);
+    avatar.style.setProperty("--h", hue(c.user_email || c.user_id));
+    $("modalUser").textContent = c.user_name || "Unknown user";
+    $("modalEmail").textContent = c.user_email || "";
+
+    $("modalStatus").innerHTML = statusPill(c.status);
+    resetDeleteArea();
+
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closePanel() {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+    current = null;
+  }
+
+  async function post(body) {
+    const res = await fetch("api/admin-complaints.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch { throw new Error(`Server error (HTTP ${res.status}). Please try again.`); }
+    if (!data.success) throw new Error(data.message || "Request failed.");
+    return data;
+  }
+
+  /* delete with inline confirmation (no browser pop-up) */
+  deleteArea.addEventListener("click", async (e) => {
+    if (!current) return;
+
+    if (e.target.id === "deleteComplaintBtn") {
+      deleteArea.innerHTML = `
+        <span class="ac-confirm-text">Delete this complaint permanently?</span>
+        <button type="button" class="au-btn" id="cancelDelete">Cancel</button>
+        <button type="button" class="au-btn au-btn--solid-danger" id="confirmDelete">Yes, delete</button>`;
+      return;
+    }
+
+    if (e.target.id === "cancelDelete") {
+      resetDeleteArea();
+      return;
+    }
+
+    if (e.target.id === "confirmDelete") {
+      e.target.disabled = true;
+      e.target.textContent = "Deleting…";
+      try {
+        await post({ action: "delete", report_id: current.report_id });
+        const id = String(current.report_id);
+        complaints = complaints.filter((c) => String(c.report_id) !== id);
+        closePanel();
+        render();
+      } catch (err) {
+        deleteArea.innerHTML = `<span class="ac-confirm-text">${escapeHtml(err.message || "Couldn't delete.")}</span>`;
+        setTimeout(resetDeleteArea, 2500);
+      }
+    }
+  });
+
+  /* ---------- events ---------- */
+  tableBody.addEventListener("click", (e) => {
+    const row = e.target.closest(".ac-row");
+    if (!row) return;
+    const c = complaints.find((x) => String(x.report_id) === row.dataset.id);
+    if (c) openComplaint(c);
+  });
+
+  tabs.addEventListener("click", (e) => {
+    const b = e.target.closest(".ag-tab");
+    if (!b) return;
+    tabs.querySelectorAll(".ag-tab").forEach((t) => t.classList.toggle("is-active", t === b));
+    statusFilter = b.dataset.status;
+    page = 1;
+    render();
+  });
+
+  severityChips.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-severity]");
+    if (!b) return;
+    severityChips.querySelectorAll("button").forEach((x) => x.classList.toggle("is-active", x === b));
+    severityFilter = b.dataset.severity;
+    page = 1;
+    render();
+  });
+
+  searchInput.addEventListener("input", () => { page = 1; render(); });
+
+  pager.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-page]");
+    if (!btn || btn.disabled) return;
+    page = Number(btn.dataset.page);
+    render();
+    document.querySelector(".ag-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  $("closeComplaintModal").addEventListener("click", closePanel);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closePanel(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && current) closePanel(); });
+
+  /* ---------- load ---------- */
+  (async () => {
+    try {
+      const res = await fetch("api/admin-complaints.php");
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Unable to load complaints.");
+      complaints = data.complaints || [];
+      render();
+    } catch (err) {
+      console.error(err);
+      tableBody.innerHTML = `<tr><td colspan="6" class="ad-empty">Unable to load complaints.</td></tr>`;
+    }
+  })();
+});

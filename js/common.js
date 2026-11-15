@@ -295,7 +295,11 @@ function applyRoleNavigation() {
 
     linksContainer.innerHTML = `
       <a href="government-dashboard.html">
-        Home
+        Dashboard
+      </a>
+
+      <a href="employee-complaints.html">
+        Complaints
       </a>
 
       <a href="games.html">
@@ -353,10 +357,6 @@ function applyRoleNavigation() {
       Complaints
     </a>
 
-    <a href="admin-settings.html">
-      Settings
-    </a>
-
     <a
       class="btn logoutLink"
       href="#"
@@ -371,8 +371,29 @@ function applyRoleNavigation() {
     >
       🌙
     </button>
+
+    <a
+      class="icon profileIcon"
+      href="profile.html"
+      aria-label="My profile"
+    >
+      👤
+    </a>
   `;
 }
+
+  // the menu was rebuilt: put the saved avatar and theme icon back
+  const avatarMap = {
+    default: "👤", cat: "🐱", lion: "🦁", rabbit: "🐰",
+    owl: "🦉", duck: "🦆", turtle: "🐢", bear: "🐻"
+  };
+  const savedAvatar = localStorage.getItem("profile_avatar");
+  linksContainer.querySelectorAll(".profileIcon").forEach(icon => {
+    icon.textContent = avatarMap[savedAvatar] || avatarMap.default;
+  });
+  if (typeof updateThemeIcon === "function") {
+    updateThemeIcon();
+  }
 
 }
 
@@ -490,3 +511,39 @@ function handleSessionExpired(data) {
   }
   return false;
 }
+
+/* =========================================================
+   Individuals: dot on "Complaints" in the nav when one of
+   their complaints got a new status since they last looked
+   ========================================================= */
+(function complaintUpdateDot() {
+  let role = "";
+  try { role = (JSON.parse(localStorage.getItem("diraUser") || "{}").role) || ""; } catch {}
+  if (role !== "individual") return;
+  if (/my-reports\.html$/i.test(location.pathname)) return;
+
+  const link = document.querySelector('.nav a[href="my-reports.html"]');
+  if (!link) return;
+
+  let seen = null;
+  try { seen = JSON.parse(localStorage.getItem("diraComplaintSeen") || "null"); } catch {}
+  seen = seen || {}; // every complaint starts as Pending
+
+  const norm = (s) => {
+    const v = String(s || "").trim().toLowerCase();
+    if (v.startsWith("resol") || v === "closed" || v === "done") return "Resolved";
+    if (v.includes("review") || v === "in progress") return "Reviewing";
+    return "Pending";
+  };
+
+  fetch("api/my-reports.php", { cache: "no-store" })
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data || !data.success) return;
+      const changed = (data.reports || []).some((c) => (seen[c.report_id] || "Pending") !== norm(c.status));
+      if (changed && !link.querySelector(".nav-dot")) {
+        link.insertAdjacentHTML("beforeend", '<span class="nav-dot" title="A complaint has a new status"></span>');
+      }
+    })
+    .catch(() => {});
+})();

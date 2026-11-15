@@ -7,11 +7,13 @@
 
   <title>Games Management | DIR'A Admin</title>
 
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=9">
+  <style>html.admin-checking body{visibility:hidden}</style>
+  <script src="js/admin-guard.js"></script>
 </head>
 
 
-<body>
+<body class="fullPage">
 
   <main class="page">
 
@@ -64,10 +66,6 @@
           Reports
         </a>
 
-        <a href="admin-settings.html">
-          Settings
-        </a>
-
 
         <a
           class="btn"
@@ -85,6 +83,8 @@
           🌙
         </button>
 
+        <a class="icon profileIcon" href="profile.html" aria-label="My profile">👤</a>
+
       </div>
 
     </nav>
@@ -92,160 +92,72 @@
 
 
     <!-- =========================================
-         PAGE TITLE
+         GAMES MANAGEMENT
     ========================================== -->
+    <section class="section adminDash agPage">
 
-    <section class="section">
-
-      <div class="admin-page-heading">
-
+      <div class="ad-head">
         <div>
+          <p class="ad-eyebrow">ADMIN / GAMES</p>
+          <h1>Games Management</h1>
+          <p class="mini">Add games from Steam and keep an eye on their risk analysis.</p>
+        </div>
+      </div>
 
-          <p class="mini">
-            ADMIN / GAMES
-          </p>
+      <!-- filter tabs with live counts -->
+      <div class="ag-tabs-row">
+      <div class="ag-tabs" id="agTabs" role="tablist">
+        <button class="ag-tab is-active" data-filter="all" type="button">All <span id="cntAll">0</span></button>
+        <button class="ag-tab" data-filter="low" type="button"><i style="--c:#22c55e"></i>Low <span id="cntLow">0</span></button>
+        <button class="ag-tab" data-filter="medium" type="button"><i style="--c:#f59e0b"></i>Medium <span id="cntMedium">0</span></button>
+        <button class="ag-tab" data-filter="high" type="button"><i style="--c:#ef4444"></i>High <span id="cntHigh">0</span></button>
+        <button class="ag-tab" data-filter="new" type="button"><i style="--c:#94a3b8"></i>Not analyzed <span id="cntNew">0</span></button>
+      </div>
+      <button class="btn ag-add" id="addGameBtn" type="button">+ Add Game</button>
+      </div>
 
-          <h1>
-            Games Management
-          </h1>
+      <article class="ad-card ag-card">
 
-          <p class="mini">
-            View and manage games available on the DIR'A platform.
-          </p>
-
+        <div class="ag-toolbar">
+          <div class="ag-search">
+            <input type="text" id="adminGameSearch" placeholder="Search by game name or genre..." autocomplete="off">
+          </div>
+          <label class="ag-sort">
+            Sort by
+            <select id="adminSort">
+              <option value="newest">Recently added</option>
+              <option value="riskHigh">Highest risk</option>
+              <option value="riskLow">Lowest risk</option>
+              <option value="nameAZ">Name A–Z</option>
+            </select>
+          </label>
         </div>
 
-
-       <button
-  class="btn"
-  id="addGameBtn"
-  type="button"
->
-  + Add Game
-</button>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- =========================================
-         SEARCH
-    ========================================== -->
-
-    <section class="section">
-
-      <div class="toolbar admin-games-toolbar">
-
-        <div class="search">
-
-          <input
-            type="text"
-            id="adminGameSearch"
-            placeholder="Search games..."
-            autocomplete="off"
-          >
-
+        <div class="ag-table-wrap">
+          <table class="ag-table">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Risk score</th>
+                <th>Level</th>
+                <th>Analysis</th>
+                <th class="ag-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminGamesTable">
+              <tr><td colspan="5" class="ad-empty">Loading games…</td></tr>
+            </tbody>
+          </table>
         </div>
 
+        <div class="ag-pager">
+          <span class="mini" id="agShowing"></span>
+          <div class="ag-pages" id="agPages"></div>
+        </div>
 
-        <select id="adminRiskFilter">
-
-          <option value="all">
-            All Risk Levels
-          </option>
-
-          <option value="new">
-            New
-          </option>
-
-          <option value="low">
-            Low
-          </option>
-
-          <option value="medium">
-            Medium
-          </option>
-
-          <option value="high">
-            High
-          </option>
-
-        </select>
-
-      </div>
+      </article>
 
     </section>
-
-
-
-    <!-- =========================================
-         GAMES TABLE
-    ========================================== -->
-
-    <section class="section">
-
-      <div class="tableWrap admin-games-table">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Game
-              </th>
-
-              <th>
-                Genre
-              </th>
-
-              <th>
-                Platform
-              </th>
-
-              <th>
-                Overall Risk
-              </th>
-
-              <th>
-                Risk Level
-              </th>
-
-              <th>
-                Analysis Status
-              </th>
-
-              <th>
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody id="adminGamesTable">
-
-            <tr>
-
-              <td colspan="7">
-                Loading games...
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </section>
-
-
 
     <!-- =========================================
          FOOTER
@@ -359,7 +271,7 @@
 
   <script src="js/common.js"></script>
 
-  <script src="js/admin-games.js"></script>
+  <script src="js/admin-games.js?v=2"></script>
 
 
 </body>

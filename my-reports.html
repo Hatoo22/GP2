@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>My Reports</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <title>My Complaints | DIR'A</title>
+    <link rel="stylesheet" href="style.css?v=20">
 </head>
 
-<body>
+<body class="fullPage">
     <main class="page">
 
         <!-- Navbar -->
@@ -20,7 +20,7 @@
             <div class="links">
                 <a href="home.html">Home</a>
                 <a href="games.html">Games</a>
-                <a class="active" href="my-reports.html">Reports</a>
+                <a class="active" href="my-reports.html">Complaints</a>
                 <a href="tracked-games.html">My List</a>
                 <a class="btn" href="main-home.html">Log Out</a>
                 <button onclick="toggleTheme()" class="icon">🌙</button>
@@ -29,34 +29,27 @@
         </nav>
 
         <!-- Content -->
-        <section class="section">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                <h1 style="font-size:32px">My Reports</h1>
-                <a class="btn" href="games.html" title="Choose a game, then press Report on its page">+ Add Report</a>
+        <section class="section adminDash agPage mcPage">
+
+            <div class="ad-head">
+                <div>
+                    <h1>My Complaints</h1>
+                    <p class="mini">Follow what happens to every complaint you send.</p>
+                </div>
+                <a class="btn" href="games.html" title="Choose a game, then press Report on its page">+ New complaint</a>
             </div>
 
-            <div class="tableWrap animate">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Game</th>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Date Reported</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
+            <div class="mc-updates" id="mcUpdates" hidden></div>
 
-                    <tbody id="reportsBody">
-                        <!-- Loading state -->
-                        <tr>
-                            <td colspan="5" style="text-align:center; opacity:.6;">
-                                Loading reports...
-                            </td>
-                        </tr>
-                    </tbody>
+            <div class="ag-tabs" id="mcTabs" role="tablist">
+                <button class="ag-tab is-active" data-status="all" type="button">All <span id="mcAll">0</span></button>
+                <button class="ag-tab" data-status="Pending" type="button"><i style="--c:#f59e0b"></i>Pending <span id="mcPending">0</span></button>
+                <button class="ag-tab" data-status="Reviewing" type="button"><i style="--c:#3b82f6"></i>Reviewing <span id="mcReviewing">0</span></button>
+                <button class="ag-tab" data-status="Resolved" type="button"><i style="--c:#22c55e"></i>Resolved <span id="mcResolved">0</span></button>
+            </div>
 
-                </table>
+            <div class="mc-list" id="mcList">
+                <p class="mc-empty">Loading your complaints…</p>
             </div>
         </section>
 
@@ -74,8 +67,8 @@
 
     </main>
 
-    <script src="js/common.js"></script>
-    <script src="js/my-reports.js"></script>
+    <script src="js/common.js?v=8"></script>
+    <script src="js/my-reports.js?v=3"></script>
 
 </body>
 

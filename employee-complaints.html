@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Complaints | DIR'A</title>
+
+  <link rel="stylesheet" href="guardian.css?v=7">
+  <link rel="stylesheet" href="style.css?v=19">
+  <style>html.employee-checking body{visibility:hidden}</style>
+  <script src="js/employee-guard.js"></script>
+</head>
+
+
+<body class="fullPage">
+
+  <main class="page">
+
+
+    <!-- =========================
+         NAV
+    ========================== -->
+
+    <nav class="nav">
+      <a href="government-dashboard.html" class="logo logo-switch">
+        <img src="images/black-logo.png" class="logo-light" alt="DIR'A Logo">
+        <img src="images/white-logo.png" class="logo-dark" alt="DIR'A Logo">
+      </a>
+      <div class="links">
+        <a href="government-dashboard.html">Dashboard</a>
+        <a class="active" href="employee-complaints.html">Complaints</a>
+        <a href="games.html">Games</a>
+        <a href="tracked-games.html">My List</a>
+        <a class="btn logoutLink" href="#">Log Out</a>
+        <button onclick="toggleTheme()" class="icon" type="button">🌙</button>
+        <a class="icon profileIcon" href="profile.html" aria-label="My profile">👤</a>
+      </div>
+    </nav>
+
+
+
+    <!-- =========================
+         COMPLAINTS MANAGEMENT
+    ========================== -->
+    <section class="section adminDash agPage acPage">
+
+      <div class="ad-head">
+        <div>
+          <p class="ad-eyebrow">GOVERNMENT EMPLOYEE / COMPLAINTS</p>
+          <h1>Complaints</h1>
+          <p class="mini">Review reports from users and update their status as you work on them.</p>
+        </div>
+      </div>
+
+      <!-- status tabs -->
+      <div class="ag-tabs-row">
+        <div class="ag-tabs" id="acTabs" role="tablist">
+          <button class="ag-tab is-active" data-status="all" type="button">All <span id="cntAll">0</span></button>
+          <button class="ag-tab" data-status="Pending" type="button"><i style="--c:#f59e0b"></i>Pending <span id="cntPending">0</span></button>
+          <button class="ag-tab" data-status="Reviewing" type="button"><i style="--c:#3b82f6"></i>Reviewing <span id="cntReviewing">0</span></button>
+          <button class="ag-tab" data-status="Resolved" type="button"><i style="--c:#22c55e"></i>Resolved <span id="cntResolved">0</span></button>
+          <button class="ag-tab ag-tab--spam" data-status="spam" type="button"><i style="--c:#64748b"></i>Spam <span id="cntSpam">0</span></button>
+        </div>
+      </div>
+
+      <div class="ec-game-filter" id="gameFilter" hidden>
+        <span>Showing complaints for <strong id="gameFilterName"></strong></span>
+        <button type="button" class="ag-view" id="clearGameFilter">Show all games ✕</button>
+      </div>
+
+      <article class="ad-card ag-card">
+
+        <div class="ag-toolbar">
+          <div class="ag-search">
+            <input type="text" id="complaintSearch" placeholder="Search by title, game or user..." autocomplete="off">
+          </div>
+          <div class="au-status" id="severityChips" role="group" aria-label="Filter by severity">
+            <button type="button" class="is-active" data-severity="all">All severities</button>
+            <button type="button" data-severity="high"><i style="--c:#ef4444"></i>High</button>
+            <button type="button" data-severity="medium"><i style="--c:#f59e0b"></i>Medium</button>
+            <button type="button" data-severity="low"><i style="--c:#22c55e"></i>Low</button>
+          </div>
+        </div>
+
+        <div class="ag-table-wrap">
+          <table class="ag-table">
+            <thead>
+              <tr>
+                <th>Complaint</th>
+                <th>Game</th>
+                <th>Behaviors</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th class="ag-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsTable">
+              <tr><td colspan="6" class="ad-empty">Loading complaints…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ag-pager">
+          <span class="mini" id="acShowing"></span>
+          <div class="ag-pages" id="acPages"></div>
+        </div>
+
+      </article>
+
+    </section>
+
+    <!-- =========================
+         DETAILS PANEL
+    ========================== -->
+    <div id="complaintModal" class="ac-modal" aria-hidden="true">
+      <div class="ac-panel" role="dialog" aria-labelledby="modalComplaintTitle">
+
+        <header class="ac-panel-head">
+          <div>
+            <p class="ad-eyebrow">COMPLAINT #<span id="modalId"></span></p>
+            <h2 id="modalComplaintTitle">Complaint</h2>
+            <p class="mini" id="modalDate"></p>
+          </div>
+          <button id="closeComplaintModal" class="ac-close" type="button" aria-label="Close">×</button>
+        </header>
+
+                <div class="ac-spam" id="spamBox" hidden>
+          <div class="ac-spam-head">
+            <strong>Marked as spam</strong>
+            <span id="spamScore"></span>
+          </div>
+          <ul id="spamReasons"></ul>
+        </div>
+
+        <div class="ac-game" id="modalGameBox"></div>
+
+        <div class="ac-block">
+          <p class="ac-label">Status</p>
+          <div class="ac-status-switch" id="modalStatusSwitch">
+            <button type="button" data-status="Pending"><i style="--c:#f59e0b"></i>Pending</button>
+            <button type="button" data-status="Reviewing"><i style="--c:#3b82f6"></i>Reviewing</button>
+            <button type="button" data-status="Resolved"><i style="--c:#22c55e"></i>Resolved</button>
+          </div>
+          <p class="mini ac-status-msg" id="modalStatusMsg"></p>
+        </div>
+
+        <div class="ac-grid">
+          <div class="ac-block">
+            <p class="ac-label">Severity</p>
+            <div id="modalSeverity"></div>
+          </div>
+          <div class="ac-block">
+            <p class="ac-label">Observed in</p>
+            <div class="ac-tags" id="modalLocation"></div>
+          </div>
+        </div>
+
+        <div class="ac-block">
+          <p class="ac-label">Reported behaviors</p>
+          <div class="ac-tags" id="modalBehavior"></div>
+        </div>
+
+        <div class="ac-block" id="otherBehaviorBox" hidden>
+          <p class="ac-label">Other details</p>
+          <p class="ac-other" id="modalOther"></p>
+        </div>
+
+        <div class="ac-block">
+          <p class="ac-label">Reported by</p>
+          <div class="ac-reporter">
+            <span class="au-avatar" id="modalAvatar"></span>
+            <div>
+              <strong id="modalUser"></strong>
+            </div>
+          </div>
+        </div>
+
+
+
+        <footer class="ac-panel-foot">
+          <div class="ac-delete">
+            <span class="mini ac-spam-hint" id="spamHint"></span>
+            <button type="button" class="au-btn" id="spamToggleBtn">Mark as spam</button>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="footer">
+
+      <h3 class="footer-logo logo-switch">
+
+        <img
+          src="images/black-logo.png"
+          class="logo-light"
+          alt="DIR'A Logo"
+        >
+
+        <img
+          src="images/white-logo.png"
+          class="logo-dark"
+          alt="DIR'A Logo"
+        >
+
+      </h3>
+
+      <p class="mini">
+        DIR'A Platform
+      </p>
+
+    </footer>
+
+
+  </main>
+
+
+  <div id="dirGuardian" class="dir-guardian" aria-hidden="true">
+    <div class="guardian-symbol" id="guardianSymbol"></div>
+    <div class="guardian-body-wrap">
+      <div class="guardian-shadow"></div>
+      <div class="guardian-neck"></div>
+      <div class="guardian-head-wrap">
+        <div class="guardian-head">
+          <div class="guardian-ear guardian-ear-left"></div>
+          <div class="guardian-ear guardian-ear-right"></div>
+          <div class="guardian-face">
+            <span class="guardian-eye guardian-eye-left"></span>
+            <span class="guardian-eye guardian-eye-right"></span>
+          </div>
+        </div>
+      </div>
+      <div class="guardian-body"></div>
+      <div class="guardian-arm guardian-arm-left"></div>
+      <div class="guardian-arm guardian-arm-right"></div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/employee-complaints.js?v=3"></script>
+  <script src="js/guardian.js?v=2"></script>
+  <script src="js/employee-assistant.js?v=5"></script>
+
+</body>
+
+</html>

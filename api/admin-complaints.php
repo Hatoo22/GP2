@@ -1,8 +1,11 @@
 <?php
+require_once __DIR__ . '/admin-auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/spam-check.php';
+dira_spam_ensure_columns($conn);
 
 
 function sendJson($data, $status = 200) {
@@ -97,9 +100,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    GET COMPLAINTS
 ========================================= */
 
+try { dira_spam_backfill($conn); } catch (Throwable $e) { error_log('DIRA spam backfill: ' . $e->getMessage()); }
+
 $sql = "
 SELECT
 
+    r.is_spam,
+    r.spam_reasons,
     r.report_id,
     r.user_id,
     r.game_id,
@@ -123,7 +130,8 @@ SELECT
     u.name AS user_name,
     u.email AS user_email,
 
-    g.game_name
+    g.game_name,
+    g.image_url AS game_image
 
 FROM reports r
 

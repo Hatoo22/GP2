@@ -20,7 +20,7 @@ if (!$user_id) {
 
 // Handle profile data retrieval
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
-  $sql = "SELECT user_id, name, email, created_at, profile_avatar FROM users WHERE user_id = ?";
+  $sql = "SELECT user_id, name, email, role, created_at, profile_avatar FROM users WHERE user_id = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("i", $user_id);
   $stmt->execute();
@@ -93,4 +93,4 @@ $stmt->bind_param("ssi", $name, $profile_avatar, $user_id);
 }
 
 $conn->close();
-?>
+?>

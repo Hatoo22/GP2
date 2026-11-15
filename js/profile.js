@@ -4,6 +4,49 @@ const emailInput = document.getElementById("email");
 const message = document.getElementById("profileMessage");
 const saveBtn = document.getElementById("saveProfileBtn");
 
+let userRole = "individual";
+
+/* Each role gets its own navigation on the profile page */
+const ROLE_NAV = {
+  individual: {
+    home: "home.html",
+    label: "Member",
+    links: [["home.html", "Home"], ["games.html", "Games"], ["my-reports.html", "Complaints"], ["tracked-games.html", "My List"]]
+  },
+  employee: {
+    home: "government-dashboard.html",
+    label: "Government Employee",
+    links: [["government-dashboard.html", "Dashboard"], ["employee-complaints.html", "Complaints"], ["games.html", "Games"], ["tracked-games.html", "My List"]]
+  },
+  admin: {
+    home: "admin-dashboard.html",
+    label: "Administrator",
+    links: [["admin-dashboard.html", "Dashboard"], ["admin-games.html", "Games"], ["admin-users.html", "Users"], ["admin-complaints.html", "Complaints"]]
+  }
+};
+
+function applyRoleNav(role) {
+  const cfg = ROLE_NAV[role] || ROLE_NAV.individual;
+  const nav = document.getElementById("profileNavLinks");
+  if (nav) {
+    const themeIcon = nav.querySelector("button.icon")?.textContent.trim() || "🌙";
+    const avatarIcon = nav.querySelector(".profileIcon")?.textContent.trim() || "👤";
+    nav.innerHTML =
+      cfg.links.map(([href, text]) => `<a href="${href}">${text}</a>`).join("") +
+      `<a class="btn" href="main-home.html">Log Out</a>` +
+      `<button onclick="toggleTheme()" class="icon" type="button">${themeIcon}</button>` +
+      `<a class="icon profileIcon active" href="profile.html" aria-label="My profile">${avatarIcon}</a>`;
+  }
+  const logo = document.getElementById("profileLogoLink");
+  if (logo) logo.href = cfg.home;
+
+  const badge = document.getElementById("profileRole");
+  if (badge) {
+    badge.textContent = cfg.label;
+    badge.hidden = false;
+  }
+}
+
 async function loadProfile() {
   const res = await fetch("api/profile.php");
   const data = await res.json();
@@ -16,6 +59,9 @@ async function loadProfile() {
   }
 
   const user = data.user;
+  userRole = String(user.role || "individual").toLowerCase();
+  applyRoleNav(userRole);
+  document.getElementById("dangerZone").hidden = userRole !== "individual";
   const nameParts = user.name.split(" ");
 
   firstNameInput.value = nameParts[0] || "";
@@ -48,7 +94,7 @@ if (data.success) {
   showToast("Profile updated successfully");
 
   setTimeout(() => {
-    window.location.href = "home.html";
+    window.location.href = (ROLE_NAV[userRole] || ROLE_NAV.individual).home;
   }, 2000);
 
 } else {
@@ -103,5 +149,68 @@ function showToast(message) {
     toast.classList.remove("show");
   }, 2500);
 }
+
+/* =========================
+   DELETE ACCOUNT (individuals)
+========================= */
+const deleteModal = document.getElementById("deleteAccountModal");
+const deletePassword = document.getElementById("deletePassword");
+const deleteMsg = document.getElementById("deleteAccountMsg");
+const confirmDeleteBtn = document.getElementById("confirmDeleteAccount");
+
+function closeDeleteModal() {
+  deleteModal.classList.remove("show");
+  deletePassword.value = "";
+  deleteMsg.textContent = "";
+}
+
+document.getElementById("openDeleteAccount").addEventListener("click", () => {
+  deleteMsg.textContent = "";
+  deletePassword.value = "";
+  deleteModal.classList.add("show");
+  setTimeout(() => deletePassword.focus(), 50);
+});
+
+document.getElementById("cancelDeleteAccount").addEventListener("click", closeDeleteModal);
+
+deleteModal.addEventListener("click", (e) => {
+  if (e.target === deleteModal) closeDeleteModal();
+});
+
+deletePassword.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") confirmDeleteBtn.click();
+});
+
+confirmDeleteBtn.addEventListener("click", async () => {
+  const password = deletePassword.value;
+  if (!password) {
+    deleteMsg.textContent = "Please enter your password.";
+    return;
+  }
+
+  confirmDeleteBtn.disabled = true;
+  confirmDeleteBtn.textContent = "Deleting…";
+  deleteMsg.textContent = "";
+
+  try {
+    const res = await fetch("api/delete-account.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || "Could not delete the account.");
+
+    ["profile_avatar", "role"].forEach((k) => localStorage.removeItem(k));
+    deleteModal.querySelector(".confirmBox").innerHTML = `
+      <h2>Account deleted</h2>
+      <p class="mini">Your personal information has been removed. Thank you for using DIR'A.</p>`;
+    setTimeout(() => { window.location.href = "main-home.html"; }, 2200);
+  } catch (err) {
+    deleteMsg.textContent = err.message;
+    confirmDeleteBtn.disabled = false;
+    confirmDeleteBtn.textContent = "Delete my account";
+  }
+});
 
 loadProfile();

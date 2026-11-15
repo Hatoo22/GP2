@@ -5,10 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>DIR'A Platform</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="guardian.css?v=7">
+    <link rel="stylesheet" href="style.css?v=24">
 </head>
 
-<body>
+<body class="fullPage mainHome">
     <main class="page">
         <nav class="nav">
             <a href="main-home.html" class="logo logo-switch">
@@ -19,47 +20,193 @@
                     class="btn" href="login.html">Sign in</a><a class="btn" href="signup.html">Register</a><button
                     onclick="toggleTheme()" class="icon">☀</button></div>
         </nav>
-        <section class="hero homeHero animate">
-
-  <div class="homeHeroImage">
-    <img src="images/main-hero-dark.gif" alt="Hero">
-  </div>
-
-  <div class="heroContent">
-    <h1>DIR'A PLATFORM</h1>
-    <p>
-      Dir’a Platform is an AI-powered solution designed to analyze digital gaming
-      content and detect harmful behavioral patterns within player interactions
-    </p>
-    <a class="btn" href="signup.html">Join us now</a>
-  </div>
-
-</section>
-        <section class="section divider">
-
-  <div class="marquee-wrap">
-    <div class="cards marquee-track" id="featuredGamesTrack"></div>
-  </div>
-
-</section>
-        <section class="section stats">
-            <div class="stat">60% Gamer Faced<br>Toxicity</div>
-            <div class="stat">+3.7 Billion Gamer</div>
-            <div class="stat">+1 Billion Game</div>
-        </section>
-        <section class="section divider animate">
-            <h2 style="text-align:center;font-size:32px">WHY DIR’A?</h2>
-            <div class="why">
-                <div class="bubble b1">AI-powered<br>risk<br>analysis</div>
-                <div class="bubble b2">Real-time<br>insights</div>
-                <div class="bubble b3">Community<br>reporting</div>
-                <div class="bubble b4">Smart<br>decisions</div>
-                <div class="bubble b5">Safe gaming</div>
+        <!-- ================= HERO: live risk scan ================= -->
+        <section class="mh mh-hero" aria-labelledby="mhTitle">
+          <div class="mh-hero-copy">
+            <h1 id="mhTitle">Know how safe a game's community is before anyone hits play.</h1>
+            <div class="mh-actions">
+              <a class="btn" href="signup.html">Create a free account</a>
+              <a class="mh-ghost" href="#how">See how it works</a>
             </div>
+          </div>
+
+          <div class="mh-stage">
+            <div class="mh-screen">
+              <img src="images/main-hero-dark.gif" alt="" class="mh-screen-img">
+              <div class="mh-scanline" aria-hidden="true"></div>
+            </div>
+
+            <div id="dirGuardian" class="dir-guardian mh-guardian" aria-hidden="true">
+              <div class="guardian-symbol" id="guardianSymbol"></div>
+              <div class="guardian-body-wrap">
+                <div class="guardian-shadow"></div>
+                <div class="guardian-neck"></div>
+                <div class="guardian-head-wrap">
+                  <div class="guardian-head">
+                    <div class="guardian-ear guardian-ear-left"></div>
+                    <div class="guardian-ear guardian-ear-right"></div>
+                    <div class="guardian-face">
+                      <span class="guardian-eye guardian-eye-left"></span>
+                      <span class="guardian-eye guardian-eye-right"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="guardian-body"></div>
+                <div class="guardian-arm guardian-arm-left"></div>
+                <div class="guardian-arm guardian-arm-right"></div>
+              </div>
+            </div>
+
+            <div class="mh-picks" id="mhPicks">
+              <div class="mh-picks-list" id="mhPicksList"></div>
+              <p class="mh-picks-hint">Point at a game to see how Dir'a reacts</p>
+            </div>
+          </div>
         </section>
-        <section class="section divider" style="text-align:center;padding:45px">
-            <h2>Start Tracking Games</h2><a class="btn" href="signup.html">Join us now</a>
+
+        <!-- ================= HOW IT WORKS ================= -->
+        <section class="mh mh-how" id="how" aria-labelledby="howTitle">
+          <h2 id="howTitle">How Dir'a works</h2>
+          <p class="mh-how-sub">From thousands of player comments to one clear score, in five steps.</p>
+
+          <div class="mh-journey" id="mhJourney">
+            <div class="mh-rail" aria-hidden="true">
+              <span class="mh-rail-fill" id="mhRailFill"></span>
+              <div class="dir-guardian mh-rail-bot" aria-hidden="true">
+                <div class="guardian-body-wrap">
+                  <div class="guardian-neck"></div>
+                  <div class="guardian-head-wrap">
+                    <div class="guardian-head">
+                      <div class="guardian-ear guardian-ear-left"></div>
+                      <div class="guardian-ear guardian-ear-right"></div>
+                      <div class="guardian-face">
+                        <span class="guardian-eye guardian-eye-left"></span>
+                        <span class="guardian-eye guardian-eye-right"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="guardian-body"></div>
+                  <div class="guardian-arm guardian-arm-left"></div>
+                  <div class="guardian-arm guardian-arm-right"></div>
+                </div>
+              </div>
+            </div>
+
+            <ol class="mh-steps">
+              <li class="mh-step">
+                <span class="mh-step-n">1</span>
+                <div class="mh-step-body">
+                  <h3>We gather what players say</h3>
+                  <p>Player reviews from Steam, comments from YouTube, and what players share and report here on Dir'a.</p>
+                </div>
+              </li>
+              <li class="mh-step">
+                <span class="mh-step-n">2</span>
+                <div class="mh-step-body">
+                  <h3>We keep only what matters</h3>
+                  <p>Links, repeats and one-word comments are filtered out, so the AI only reads real opinions.</p>
+                </div>
+              </li>
+              <li class="mh-step">
+                <span class="mh-step-n">3</span>
+                <div class="mh-step-body">
+                  <h3>AI reads every comment</h3>
+                  <p>Our fine-tuned ModernBERT model decides if a comment is toxic and which behaviors it shows. One comment can show more than one.</p>
+                  <div class="mh-chips">
+                    <span>Bullying</span><span>Hate speech</span><span>Sexual harassment</span><span>Threats</span><span>Other toxicity</span>
+                  </div>
+                </div>
+              </li>
+              <li class="mh-step">
+                <span class="mh-step-n">4</span>
+                <div class="mh-step-body">
+                  <h3>Serious behaviors count more</h3>
+                  <p>We find the share of comments showing each behavior, give each one a weight, and add them up into one risk percentage.</p>
+                  <ul class="mh-weights">
+                    <li><span>Sexual harassment</span><b>26.6%</b></li>
+                    <li><span>Hate speech</span><b>20.1%</b></li>
+                    <li><span>Bullying</span><b>19.5%</b></li>
+                    <li><span>Threats</span><b>18.2%</b></li>
+                    <li><span>Other toxicity</span><b>15.6%</b></li>
+                  </ul>
+                </div>
+              </li>
+              <li class="mh-step">
+                <span class="mh-step-n">5</span>
+                <div class="mh-step-body">
+                  <h3>You get one clear score</h3>
+                  <p>Every game gets a risk percentage and a level. When players share their experience on Dir'a, the score updates right away.</p>
+                  <div class="mh-levels">
+                    <span style="--c:#22c55e">Low · up to 30%</span>
+                    <span style="--c:#f59e0b">Medium · 31–69%</span>
+                    <span style="--c:#ef4444">High · 70%+</span>
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </div>
         </section>
+
+        <!-- ================= RECENT GAMES ================= -->
+        <section class="mh mh-games" aria-labelledby="gamesTitle">
+          <div class="mh-head-row">
+            <h2 id="gamesTitle">Recently analyzed games</h2>
+            <a class="mh-ghost" href="signup.html">Browse all games</a>
+          </div>
+          <div class="marquee-wrap">
+            <div class="cards marquee-track" id="featuredGamesTrack"></div>
+          </div>
+        </section>
+
+        <!-- ================= WHY IT MATTERS ================= -->
+        <section class="mh mh-why" aria-labelledby="whyTitle">
+          <h2 id="whyTitle" class="mh-sr">Why it matters</h2>
+          <div class="mh-stat">
+            <span class="mh-stat-num" data-count="60" data-suffix="%">60%</span>
+            <span class="mh-stat-label">of players have faced toxicity</span>
+          </div>
+          <div class="mh-stat">
+            <span class="mh-stat-num" data-count="3.7" data-decimals="1" data-suffix="B">3.7B</span>
+            <span class="mh-stat-label">people play video games</span>
+          </div>
+          <div class="mh-stat">
+            <span class="mh-stat-num" data-count="5">5</span>
+            <span class="mh-stat-label">harmful behaviors we detect</span>
+          </div>
+        </section>
+
+        <!-- ================= WHO IT'S FOR ================= -->
+        <section class="mh mh-who" aria-labelledby="whoTitle">
+          <h2 id="whoTitle">Built for two kinds of people</h2>
+          <div class="mh-who-grid">
+            <article class="mh-who-card">
+              <h3>Parents and players</h3>
+              <ul>
+                <li>Check a game's risk before downloading it</li>
+                <li>Compare games side by side</li>
+                <li>Follow games in your list and report harmful behavior</li>
+              </ul>
+              <a class="btn" href="signup.html">Sign up as an individual</a>
+            </article>
+            <article class="mh-who-card">
+              <h3>Government employees</h3>
+              <ul>
+                <li>See which games get the most complaints</li>
+                <li>Review reports and track their status</li>
+                <li>Read the risk analysis behind every score</li>
+              </ul>
+              <a class="btn light" href="signup.html">Sign up with your work email</a>
+            </article>
+          </div>
+        </section>
+
+        <!-- ================= FINAL CTA ================= -->
+        <section class="mh mh-cta">
+          <h2>Start checking games today</h2>
+          <p>Free to use. Takes a minute to sign up.</p>
+          <a class="btn" href="signup.html">Create a free account</a>
+        </section>
+
         <footer class="footer">
             <h3 class="footer-logo logo-switch">
   <img src="images/black-logo.png" alt="Dir Logo" class="logo-light">
@@ -72,8 +219,9 @@
         </footer>
     </main>
     <script src="js/common.js"></script>
-  <script src="js/marquee.js?v=5"></script>
-    <script src="js/main-home.js?v=5"></script>
+  <script src="js/marquee.js?v=7"></script>
+    <script src="js/guardian.js?v=2"></script>
+    <script src="js/main-home.js?v=10"></script>
 </body>
 
 </html>

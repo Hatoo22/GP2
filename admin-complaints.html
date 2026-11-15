@@ -7,11 +7,13 @@
 
   <title>Complaints Management | DIR'A Admin</title>
 
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=19">
+  <style>html.admin-checking body{visibility:hidden}</style>
+  <script src="js/admin-guard.js"></script>
 </head>
 
 
-<body>
+<body class="fullPage">
 
   <main class="page">
 
@@ -60,10 +62,6 @@
           Complaints
         </a>
 
-        <a href="admin-settings.html">
-          Settings
-        </a>
-
         <a
           class="btn"
           href="main-home.html"
@@ -79,6 +77,8 @@
           🌙
         </button>
 
+        <a class="icon profileIcon" href="profile.html" aria-label="My profile">👤</a>
+
       </div>
 
     </nav>
@@ -86,223 +86,141 @@
 
 
     <!-- =========================
-         TITLE
+         COMPLAINTS MANAGEMENT
     ========================== -->
+    <section class="section adminDash agPage acPage">
 
-    <section class="section">
-
-      <p class="mini">
-        ADMIN / COMPLAINTS
-      </p>
-
-      <h1>
-        Complaints Management
-      </h1>
-
-      <p class="mini">
-        Review and manage complaints submitted by users.
-      </p>
-
-    </section>
-
-
-
-    <!-- =========================
-         SEARCH
-    ========================== -->
-
-    <section class="section">
-
-      <div class="toolbar">
-
-        <div class="search">
-
-          <input
-            type="text"
-            id="complaintSearch"
-            placeholder="Search complaint, game or user..."
-            autocomplete="off"
-          >
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         TABLE
-    ========================== -->
-
-    <section class="section">
-
-      <div class="admin-section-heading">
-
+      <div class="ad-head">
         <div>
+          <p class="ad-eyebrow">ADMIN / COMPLAINTS</p>
+          <h1>Complaints Management</h1>
+          <p class="mini">Review reports submitted by users and follow their review status.</p>
+        </div>
+      </div>
 
-          <h2>
-            Submitted Complaints
-          </h2>
+      <!-- status tabs -->
+      <div class="ag-tabs-row">
+        <div class="ag-tabs" id="acTabs" role="tablist">
+          <button class="ag-tab is-active" data-status="all" type="button">All <span id="cntAll">0</span></button>
+          <button class="ag-tab" data-status="Pending" type="button"><i style="--c:#f59e0b"></i>Pending <span id="cntPending">0</span></button>
+          <button class="ag-tab" data-status="Reviewing" type="button"><i style="--c:#3b82f6"></i>Reviewing <span id="cntReviewing">0</span></button>
+          <button class="ag-tab" data-status="Resolved" type="button"><i style="--c:#22c55e"></i>Resolved <span id="cntResolved">0</span></button>
+          <button class="ag-tab ag-tab--spam" data-status="spam" type="button"><i style="--c:#64748b"></i>Spam <span id="cntSpam">0</span></button>
+        </div>
+      </div>
 
-          <p class="mini">
-            Complaints currently stored in the DIR'A platform.
-          </p>
+      <article class="ad-card ag-card">
 
+        <div class="ag-toolbar">
+          <div class="ag-search">
+            <input type="text" id="complaintSearch" placeholder="Search by title, game or user..." autocomplete="off">
+          </div>
+          <div class="au-status" id="severityChips" role="group" aria-label="Filter by severity">
+            <button type="button" class="is-active" data-severity="all">All severities</button>
+            <button type="button" data-severity="high"><i style="--c:#ef4444"></i>High</button>
+            <button type="button" data-severity="medium"><i style="--c:#f59e0b"></i>Medium</button>
+            <button type="button" data-severity="low"><i style="--c:#22c55e"></i>Low</button>
+          </div>
         </div>
 
+        <div class="ag-table-wrap">
+          <table class="ag-table">
+            <thead>
+              <tr>
+                <th>Complaint</th>
+                <th>Game</th>
+                <th>Behaviors</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th class="ag-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsTable">
+              <tr><td colspan="6" class="ad-empty">Loading complaints…</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-        <span
-          class="pill"
-          id="complaintsCount"
-        >
-          0 Complaints
-        </span>
+        <div class="ag-pager">
+          <span class="mini" id="acShowing"></span>
+          <div class="ag-pages" id="acPages"></div>
+        </div>
 
-      </div>
-
-
-      <div class="tableWrap admin-reports-table">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>Complaint</th>
-
-              <th>Game</th>
-
-              <th>User</th>
-
-              <th>Behavior</th>
-
-              <th>Severity</th>
-
-              <th>Date</th>
-
-              <th>Actions</th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody id="complaintsTable">
-
-            <tr>
-
-              <td colspan="7">
-                Loading complaints...
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
+      </article>
 
     </section>
 
-
-
     <!-- =========================
-         VIEW MODAL
+         DETAILS PANEL
     ========================== -->
+    <div id="complaintModal" class="ac-modal" aria-hidden="true">
+      <div class="ac-panel" role="dialog" aria-labelledby="modalComplaintTitle">
 
-    <div
-      id="complaintModal"
-      class="admin-game-modal"
-    >
-
-      <div class="admin-game-modal-box">
-
-        <button
-          id="closeComplaintModal"
-          class="admin-modal-close"
-          type="button"
-        >
-          ×
-        </button>
-
-
-        <p class="mini">
-          COMPLAINT DETAILS
-        </p>
-
-        <h2 id="modalComplaintTitle">
-          Complaint
-        </h2>
-
-
-        <div class="complaint-details-grid">
-
+        <header class="ac-panel-head">
           <div>
-            <span>Game</span>
-            <strong id="modalGame"></strong>
+            <p class="ad-eyebrow">COMPLAINT #<span id="modalId"></span></p>
+            <h2 id="modalComplaintTitle">Complaint</h2>
+            <p class="mini" id="modalDate"></p>
           </div>
+          <button id="closeComplaintModal" class="ac-close" type="button" aria-label="Close">×</button>
+        </header>
 
-          <div>
-            <span>User</span>
-            <strong id="modalUser"></strong>
+                <div class="ac-spam" id="spamBox" hidden>
+          <div class="ac-spam-head">
+            <strong>Marked as spam</strong>
+            <span id="spamScore"></span>
           </div>
-
-          <div>
-            <span>Email</span>
-            <strong id="modalEmail"></strong>
-          </div>
-
-          <div>
-            <span>Status</span>
-            <strong id="modalStatus"></strong>
-          </div>
-
-          <div>
-            <span>Behavior</span>
-            <strong id="modalBehavior"></strong>
-          </div>
-
-          <div>
-            <span>Severity</span>
-            <strong id="modalSeverity"></strong>
-          </div>
-
-          <div>
-            <span>Observed At</span>
-            <strong id="modalLocation"></strong>
-          </div>
-
-          <div>
-            <span>Date</span>
-            <strong id="modalDate"></strong>
-          </div>
-
+          <ul id="spamReasons"></ul>
         </div>
 
+        <div class="ac-game" id="modalGameBox"></div>
 
-        <div
-          id="otherBehaviorBox"
-          class="complaint-other-box"
-          hidden
-        >
-
-          <span>
-            Other Details
-          </span>
-
-          <p id="modalOther"></p>
-
+        <div class="ac-block">
+          <p class="ac-label">Status</p>
+          <div id="modalStatus"></div>
+          <p class="mini ac-status-note">Status is updated by the government employee reviewing the report.</p>
         </div>
+
+        <div class="ac-grid">
+          <div class="ac-block">
+            <p class="ac-label">Severity</p>
+            <div id="modalSeverity"></div>
+          </div>
+          <div class="ac-block">
+            <p class="ac-label">Observed in</p>
+            <div class="ac-tags" id="modalLocation"></div>
+          </div>
+        </div>
+
+        <div class="ac-block">
+          <p class="ac-label">Reported behaviors</p>
+          <div class="ac-tags" id="modalBehavior"></div>
+        </div>
+
+        <div class="ac-block" id="otherBehaviorBox" hidden>
+          <p class="ac-label">Other details</p>
+          <p class="ac-other" id="modalOther"></p>
+        </div>
+
+        <div class="ac-block">
+          <p class="ac-label">Reported by</p>
+          <div class="ac-reporter">
+            <span class="au-avatar" id="modalAvatar"></span>
+            <div>
+              <strong id="modalUser"></strong>
+              <span id="modalEmail"></span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="ac-panel-foot">
+          <div class="ac-delete" id="deleteArea">
+            <button type="button" class="au-btn au-btn--danger" id="deleteComplaintBtn">Delete complaint</button>
+          </div>
+        </footer>
 
       </div>
-
     </div>
-
-
 
     <!-- =========================
          FOOTER
@@ -337,7 +255,7 @@
 
 
   <script src="js/common.js"></script>
-  <script src="js/admin-complaints.js"></script>
+  <script src="js/admin-complaints.js?v=4"></script>
 
 </body>
 

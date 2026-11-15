@@ -7,7 +7,9 @@ require_once __DIR__ . '/config.php';
 $sql = "
 SELECT 
     game_id,
+    api_game_id,
     game_name,
+    created_at,
     description,
     genre,
     platform,
