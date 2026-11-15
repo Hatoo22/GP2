@@ -10931,7 +10931,6 @@ body.dark-mode .gdPage a.ad-kpi:hover .ad-kpi-icon { color: #1a0f05; }
 
 @media (prefers-reduced-motion: reduce) {
   .mainHome .mh-scanline { animation: none !important; }
-  .mainHome .mh-meter i { transition: none !important; }
 }
 
 /* ---------- how it works: vertical journey ---------- */
@@ -11224,6 +11223,8 @@ body.dark-mode .gdPage a.ad-kpi:hover .ad-kpi-icon { color: #1a0f05; }
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s ease;
 }
 .mainHome.dark-mode .mh-pick { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); }
+/* the cards are buttons now (interaction only, no link) */
+button.mh-pick { width: 100%; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; appearance: none; }
 .mainHome .mh-pick img {
   width: 70px;
   height: 33px;
@@ -11294,9 +11295,6 @@ body.dark-mode .gdPage a.ad-kpi:hover .ad-kpi-icon { color: #1a0f05; }
 @media (max-width: 560px) {
   .mainHome .mh-stage { padding: 0 0 230px 0; }
   .mainHome .mh-picks { width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mainHome .mh-pick-meter i { transition: none; }
 }
 .mainHome .mh-stage { padding-bottom: 96px; }
 .mainHome .mh-picks { bottom: 0; }
@@ -11571,9 +11569,6 @@ a.ab-member:hover { border-color: var(--ab-accent); transform: translateY(-2px);
   .aboutPage .ab-feature-grid { grid-template-columns: 1fr; }
   .aboutPage .ab-members { grid-template-columns: 1fr; }
   .aboutPage .ab-weight { grid-template-columns: 110px 1fr 48px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .aboutPage .ab-weight i::after { transition: none; }
 }
 .aboutPage .ab-weights.is-in .ab-weight i::after { width: var(--w); }
 .aboutPage .ab-team-photo .ab-img {
@@ -12686,30 +12681,56 @@ body.dark-mode .an-warning { color: #fcd34d !important; }
    MOBILE PASS (phones)
    ========================================================= */
 @media (max-width: 560px) {
-  /* main home: screenshot full width, Dir'a sits small on its corner above the game picks */
-  .mainHome .mh-stage { padding: 0 0 236px 0 !important; }
+  /* main home (phones): headline -> buttons -> screenshot -> Dir'a stands under the
+     screenshot's corner, next to the hint, right above the game cards */
+  .mainHome .mh-hero { min-height: 0 !important; gap: 26px !important; }
+  .mainHome .mh-hero h1 { font-size: 34px !important; max-width: none; }
+  .mainHome .mh-actions { flex-wrap: nowrap; gap: 10px; margin-top: 22px !important; }
+  .mainHome .mh-actions > * { flex: 1 1 0; min-width: 0; text-align: center; justify-content: center; padding-left: 10px !important; padding-right: 10px !important; font-size: 13px !important; white-space: nowrap; }
+  .mainHome .mh-stage { padding: 0 !important; container-type: inline-size; }
   .mainHome .mh-guardian {
-    transform: scale(.5) !important;
-    transform-origin: left bottom !important;
-    left: -4px !important;
-    bottom: 226px !important;
-    top: auto !important;
-    z-index: 3;
+    transform: scale(.46) !important;
+    transform-origin: left top !important;
+    left: 4px !important;
+    top: calc(62.5cqw - 62px) !important;
+    bottom: auto !important;
+    z-index: 5;
   }
-  .mainHome .mh-actions { flex-wrap: wrap; }
-  .mainHome .mh-actions > * { flex: 1 1 auto; text-align: center; justify-content: center; }
+  .mainHome .mh-picks { position: static !important; width: 100% !important; display: flex; flex-direction: column; }
+  .mainHome .mh-picks-hint {
+    order: -1;
+    min-height: 40px;
+    margin: 0 !important;
+    padding-left: 84px;
+    display: flex;
+    align-items: center;
+    text-align: left !important;
+  }
 
   /* floating assistant robot: smaller so it doesn't cover buttons */
-  .dir-guardian:not(.mh-guardian):not(.ab-guardian):not(.mh-rail-bot) { transform: scale(.4) !important; left: 2px; bottom: 2px; }
+  /* uses the separate "scale" property so the robot's own animations keep working */
+  body:not(.authPage) .dir-guardian:not(.mh-guardian):not(.ab-guardian):not(.mh-rail-bot) { scale: .55; transform-origin: left bottom; left: 2px; bottom: 2px; }
+  /* log in / sign up: same peeking robot, just smaller, bottom right */
+  body.authPage .dir-guardian { scale: .62; transform-origin: right bottom; right: 6px !important; }
   .guardianHint { font-size: 12px; }
 
   /* about: smaller robot in the hero */
-  .aboutPage .ab-guardian { transform: scale(.95) !important; }
-  .aboutPage .ab-halo { width: 220px; height: 220px; }
-  .aboutPage .ab-intro-art { min-height: 250px !important; height: 250px; }
+  /* compact so the headline shows on the first screen */
+  .aboutPage .ab-intro { min-height: 0 !important; gap: 16px !important; padding-top: 0 !important; }
+  .aboutPage .ab-guardian { scale: .44; }
+  .aboutPage .ab-halo { width: 160px; height: 160px; }
+  .aboutPage .ab-intro-art { min-height: 0 !important; height: 175px !important; margin-top: -10px; }
+  .aboutPage .ab-intro h1 { font-size: 30px !important; }
+  .aboutPage .ab-intro-copy p { font-size: 15.5px; margin-top: 14px !important; }
+  .aboutPage .ab-intro-copy .btn { margin-top: 22px !important; }
 
   /* game page: action buttons share the row */
-  .gx-actions > * { flex: 1 1 auto; min-width: 0 !important; }
+  /* same layout for every game: Track + Safer alternative on one row, Report full width under */
+  .gx-actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gx-actions > * { min-width: 0 !important; width: 100%; justify-content: center; text-align: center; }
+  .gx-actions #reportGameBtn,
+  .gx-actions:has(#saferAlternativeBtn[hidden]) #trackGameBtn,
+  .gx-actions:has(#trackGameBtn[hidden]) #saferAlternativeBtn { grid-column: 1 / -1; }
 
   /* safer alternatives: tighter rows so names fit */
   .rx-item { grid-template-columns: 18px 64px minmax(0, 1fr) auto; gap: 10px; padding: 8px 10px 8px 8px; }
@@ -12865,4 +12886,82 @@ body.dark-mode .cmp-bar { background-image: linear-gradient(rgba(255,255,255,.07
   .cmp-safest { top: 14px; right: 14px; }
   .cmp-card { padding: 18px; }
   .cmp-behaviors li { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* forgot password: "create an account" link inside the message */
+.authMessage .authInlineLink {
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+/* tracked games: empty state spans the whole grid (same look as complaints) */
+.gamesGrid .tg-empty { grid-column: 1 / -1; border-color: rgba(50, 197, 210, 0.35); }
+body.dark-mode .gamesGrid .tg-empty { border-color: rgba(255, 157, 61, 0.22); }
+.gamesGrid .tg-empty .btn { display: inline-flex; width: auto; }
+
+/* theme button: the icon comes from CSS so it's right from the first frame
+   (html.dark-pre is set in <head> before the page draws) - no moon/sun jump */
+button[onclick="toggleTheme()"] { font-size: 0 !important; }
+button[onclick="toggleTheme()"]::before { content: "🌙"; font-size: 21px; line-height: 1; }
+html.dark-pre button[onclick="toggleTheme()"]::before,
+body.dark-mode button[onclick="toggleTheme()"]::before { content: "☀"; }
+
+/* phone menu button (built by common.js) - hidden on big screens */
+.navMenuBtn { display: none; }
+
+@media (max-width: 760px) {
+  body .nav .links > button[onclick="toggleTheme()"]::before { font-size: 18px; }
+
+  .navMenuBtn {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    order: 0;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(50, 197, 210, 0.42);
+    background: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body.dark-mode .navMenuBtn { border-color: rgba(255, 157, 61, 0.35); background: rgba(255, 255, 255, 0.04); }
+  .navMenuBtn span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--text, #0f172a);
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  body.dark-mode .navMenuBtn span { background: #fff; }
+  .nav.menu-open .navMenuBtn span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .nav.menu-open .navMenuBtn span:nth-child(2) { opacity: 0; }
+  .nav.menu-open .navMenuBtn span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* page links are folded away until the menu is opened */
+  body .nav .links > a:not(.btn):not(.icon) { display: none !important; }
+  body .nav .links::before { display: none; }
+  body .nav.menu-open .links::before { display: block; margin-top: 10px; }
+  body .nav.menu-open .links > a:not(.btn):not(.icon) {
+    display: block !important;
+    flex-basis: 100%;
+    text-align: center;
+    padding: 13px 0 !important;
+    font-size: 13px !important;
+    border-top: 1px solid rgba(50, 197, 210, 0.18);
+  }
+  body.dark-mode .nav.menu-open .links > a:not(.btn):not(.icon) { border-top-color: rgba(255, 157, 61, 0.14); }
+}
+
+/* "Need help?" bubble sits right next to the small robot on phones */
+@media (max-width: 560px) {
+  .guardianHint { left: 64px !important; bottom: 74px !important; }
 }

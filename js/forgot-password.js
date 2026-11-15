@@ -32,6 +32,14 @@
       });
       const data = await res.json().catch(() => ({}));
       show(data.message || "Something went wrong. Please try again.", data.success ? "success" : "error");
+      if (data.no_account) {
+        // no account with this email: offer sign up right under the message
+        const link = document.createElement("a");
+        link.href = "signup.html";
+        link.className = "authInlineLink";
+        link.textContent = "create an account";
+        msg.append(" ", link, ".");
+      }
       if (data.success) form.querySelector(".field").hidden = true;
       btn.hidden = !!data.success;
     } catch {
