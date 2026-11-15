@@ -3,18 +3,24 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Admin Dashboard | DIR'A</title>
 
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css?v=42">
   <style>html.admin-checking body{visibility:hidden}</style>
   <script src="js/admin-guard.js"></script>
 </head>
 
 <body class="fullPage">
 
-  <main class="page">
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
 
     <!-- =========================================
          HEADER
@@ -192,6 +198,7 @@
               <h2>Latest suggestions <span class="ad-badge" id="newSuggestions" hidden></span></h2>
               <p class="mini">Sent by users through the Dir'a Assistant</p>
             </div>
+            <a class="ad-link" href="admin-suggestions.html">View all →</a>
           </header>
           <ul class="ad-list" id="latestSuggestions">
             <li class="ad-empty">Loading…</li>
@@ -233,7 +240,7 @@
   </main>
 
 
-  <script src="js/common.js"></script>
+  <script src="js/common.js?v=9"></script>
 
   <script src="js/admin-dashboard.js?v=4"></script>
 

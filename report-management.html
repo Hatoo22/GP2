@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <title>Redirecting… | DIR'A</title>
   <script>
     (function () {
@@ -13,6 +15,7 @@
   <meta http-equiv="refresh" content="0; url=employee-complaints.html">
 </head>
 <body>
-  <p>This page moved to <a href="employee-complaints.html">Complaints</a>.</p>
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<p>This page moved to <a href="employee-complaints.html">Complaints</a>.</p>
 </body>
 </html>

@@ -117,40 +117,79 @@ function weightedLabelPercent(count, total, label) {
 
   if (total <= 0) return 0;
 
-  const rawPercent = (count / total) * 100;
-  const weightedPercent = rawPercent * labelWeights[label];
+  // Breakdown shows the share of comments with this behavior (same as the
+  // game page). The weights are only used to build the overall risk score.
+  const rawPercent = Math.min(100, (count / total) * 100);
 
-  return Number(weightedPercent.toFixed(2));
+  return Number(rawPercent.toFixed(2));
 }
 
+
+// one colour per game, used in the score tiles and the behavior bars
+const GAME_COLORS = ["#06b6d4", "#8b5cf6", "#ec4899", "#3b82f6", "#84cc16", "#f97316"];
+const CMP_BEHAVIORS = [
+  ["bullying", "Bullying"],
+  ["hate_speech", "Hate speech"],
+  ["threat", "Threats"],
+  ["sexual_harassment", "Sexual harassment"],
+  ["other_toxicity", "Other toxicity"]
+];
+
+function cmpEsc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function cmpRiskColor(v) {
+  return v >= 70 ? "#ef4444" : v >= 31 ? "#f59e0b" : "#22c55e";
+}
 
 function displayGameComparison(selectedGames) {
-  const comparisonResult =
-    document.getElementById("comparisonResult");
-
-  const comparisonGrid =
-    document.getElementById("comparisonGrid");
-
-    comparisonGrid.className = "comparisonGrid";
-
-if (selectedGames.length === 3) {
-  comparisonGrid.classList.add("comparisonGrid--three");
-} else if (selectedGames.length >= 4) {
-  comparisonGrid.classList.add("comparisonGrid--many");
-}
-
-  const message =
-    document.getElementById("compareMessage");
-
-
+  const comparisonResult = document.getElementById("comparisonResult");
+  const comparisonGrid = document.getElementById("comparisonGrid");
   comparisonResult.style.display = "block";
 
-  comparisonGrid.innerHTML = selectedGames
-    .map(game => createGameComparisonCard(game))
-    .join("");
+  const games = selectedGames.map((g, i) => ({ ...g, _color: GAME_COLORS[i % GAME_COLORS.length] }));
+  const lowest = Math.min(...games.map(getRiskValue));
 
-  document.getElementById("resultText").innerHTML =
-    createComparisonSummary(selectedGames);
+  // 1) score tiles
+  const tiles = games.map(g => {
+    const r = getRiskValue(g);
+    const safest = r === lowest && games.filter(x => getRiskValue(x) === lowest).length === 1;
+    return `
+      <a class="cmp-tile" href="game-details.html?game_id=${encodeURIComponent(g.game_id)}" style="--g:${g._color}">
+        <span class="cmp-tile-img">${g.image_url ? `<img src="${cmpEsc(g.image_url)}" alt="" loading="lazy">` : ""}</span>
+        <span class="cmp-tile-name"><i></i>${cmpEsc(g.game_name)}</span>
+        <strong style="color:${cmpRiskColor(r)}">${Math.round(r)}%</strong>
+        <span class="cmp-tile-level">${cmpEsc(g.overall_risk_level || "Low")} risk</span>
+        ${safest ? `<em class="cmp-safest">Safest</em>` : ""}
+      </a>`;
+  }).join("");
+
+  // 2) behavior by behavior
+  const rows = CMP_BEHAVIORS.map(([key, label]) => `
+    <li>
+      <span class="cmp-b-label">${label}</span>
+      <span class="cmp-b-bars">
+        ${games.map(g => {
+          const v = weightedLabelPercent(g[key], g.comments_count, key);
+          return `<span class="cmp-bar" style="--g:${g._color}" title="${cmpEsc(g.game_name)}: ${Math.round(v)}%"><i style="--w:${v}%"></i><em>${Math.round(v)}%</em></span>`;
+        }).join("")}
+      </span>
+    </li>`).join("");
+
+  const legend = games.map(g => `<span style="--g:${g._color}"><i></i>${cmpEsc(g.game_name)}</span>`).join("");
+
+  comparisonGrid.className = "cmp";
+  comparisonGrid.innerHTML = `
+    <div class="cmp-tiles cmp-tiles--${Math.min(games.length, 6)}">${tiles}</div>
+    <article class="cmp-card">
+      <div class="cmp-card-head">
+        <h2>What players run into</h2>
+        <div class="cmp-legend">${legend}</div>
+      </div>
+      <ul class="cmp-behaviors">${rows}</ul>
+    </article>`;
+
+  document.getElementById("resultText").innerHTML = createComparisonSummary(selectedGames);
 }
 
 

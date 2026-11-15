@@ -313,7 +313,22 @@
 
   function afterSummary(gameId) {
     const opts = [];
-    if (gameId) opts.push({ label: "Open these complaints", href: `employee-complaints.html?game_id=${encodeURIComponent(gameId)}` });
+    if (gameId) {
+      const g = (complaints || []).find((c) => String(c.game_id) === String(gameId));
+      const name = (g && g.game_name) || "";
+      opts.push({
+        label: "Open these complaints",
+        action: () => {
+          // on the Complaints page: just search for the game, no filter to clear
+          if (/employee-complaints\.html$/i.test(location.pathname) && name) {
+            window.dispatchEvent(new CustomEvent("dira:complaints-search", { detail: { query: name } }));
+            close();
+          } else {
+            location.href = `employee-complaints.html?q=${encodeURIComponent(name)}`;
+          }
+        }
+      });
+    }
     opts.push(
       { label: "Summarize another game", action: pickGame },
       { label: "Summarize all", action: doAll, variant: gameId ? undefined : "ghost" }
@@ -346,6 +361,19 @@
   panel.querySelector(".guardianChatClose").addEventListener("click", close);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 
-  setTimeout(() => { if (!panel.classList.contains("open")) hint.classList.add("show"); }, 1500);
-  setTimeout(() => hint.classList.remove("show"), 7500);
+  /* hint bubble: shows shortly after the page loads, then again every
+     40 seconds as a reminder, until the chat has been opened once */
+  (function hintReminder() {
+    const FIRST = 1500, EVERY = 40000, SHOW_FOR = 6000;
+    let opened = false;
+    const guardianBox = document.getElementById("dirGuardian");
+    if (guardianBox) guardianBox.addEventListener("click", () => { opened = true; hint.classList.remove("show"); });
+    function pop() {
+      if (opened || panel.classList.contains("open") || document.hidden) return;
+      hint.classList.add("show");
+      setTimeout(() => hint.classList.remove("show"), SHOW_FOR);
+    }
+    setTimeout(pop, FIRST);
+    setInterval(pop, EVERY);
+  })();
 })();

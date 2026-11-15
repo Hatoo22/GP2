@@ -2,8 +2,8 @@
    DIR'A GUARDIAN — ASSISTANT CHAT
    Click the robot to open a small guided chat:
    - FAQ answers
-   - Suggest a game (sends the game name)
-   - Send a suggestion (free text)
+   - Suggest a game to add (sends the game name to the admins)
+   - Send an idea to improve Dir'a (free text to the admins)
    ========================================================= */
 (function () {
   const guardianEl = document.getElementById("dirGuardian");
@@ -59,7 +59,7 @@
   const panel = document.createElement("section");
   panel.className = "guardianChat";
   panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "DIR'A assistant");
+  panel.setAttribute("aria-label", "Dir'a assistant");
   panel.innerHTML = `
     <header class="guardianChatHead">
       <div class="guardianChatTitle">
@@ -162,18 +162,18 @@
     hideInput();
     botSay(text || "How can I help you?", () => {
       setOptions([
-        { label: "❓ I have a question", action: faqMenu },
-        { label: "🎮 Suggest a game", action: suggestGame },
-        { label: "💡 Send a suggestion", action: sendSuggestion }
+        { label: "❓ Common questions", action: faqMenu },
+        { label: "🎮 Suggest a game to add to Dir'a", action: suggestGame },
+        { label: "💡 Send an idea to improve Dir'a", action: sendSuggestion }
       ]);
     });
   }
 
   function faqMenu() {
     hideInput();
-    addMsg("I have a question", "user");
+    addMsg("Common questions", "user");
     setOptions([]);
-    botSay("Sure! Pick one of these common questions:", showFaqList);
+    botSay("Here are the questions people ask most. Pick one:", showFaqList);
   }
 
   function showFaqList() {
@@ -195,9 +195,9 @@
   }
 
   function suggestGame() {
-    addMsg("Suggest a game", "user");
+    addMsg("Suggest a game to add to Dir'a", "user");
     setOptions([]);
-    botSay("Great! What's the name of the game you'd like us to add?", () => {
+    botSay("Is there a game you'd like Dir'a to analyze? Type its name and I'll send it to the admin team.", () => {
       mode = "game_suggestion";
       showInput("Game name...", 150);
       setOptions([{ label: "Cancel", action: () => mainMenu(), variant: "ghost" }]);
@@ -205,11 +205,11 @@
   }
 
   function sendSuggestion() {
-    addMsg("Send a suggestion", "user");
+    addMsg("Send an idea to improve Dir'a", "user");
     setOptions([]);
-    botSay("I'd love to hear it! Write your suggestion and I'll pass it to the DIR'A team.", () => {
+    botSay("Have an idea to make Dir'a better, or something that didn't work well? Write it here and I'll send it to the admin team.", () => {
       mode = "general_suggestion";
-      showInput("Write your suggestion...", 1000);
+      showInput("Write your idea...", 1000);
       setOptions([{ label: "Cancel", action: () => mainMenu(), variant: "ghost" }]);
     });
   }
@@ -239,8 +239,8 @@
 
       react("low");
       const thanks = type === "game_suggestion"
-        ? `Thanks! I sent “${text}” to our team. They'll review it and may add it soon.`
-        : "Thank you! Your suggestion was sent to the DIR'A team.";
+        ? `Thanks! I sent “${text}” to the admin team. They'll review it and may add it soon.`
+        : "Thank you! Your idea was sent to the admin team.";
       botSay(thanks, () => mainMenu("Anything else I can help with?"));
     } catch (err) {
       react("medium");
@@ -313,9 +313,19 @@
     input.style.height = Math.min(input.scrollHeight, 110) + "px";
   });
 
-  /* small hint bubble a moment after the page loads */
-  setTimeout(() => {
-    if (!panel.classList.contains("open")) hint.classList.add("show");
-  }, 1500);
-  setTimeout(() => hint.classList.remove("show"), 7500);
+  /* hint bubble: shows shortly after the page loads, then again every
+     40 seconds as a reminder, until the chat has been opened once */
+  (function hintReminder() {
+    const FIRST = 1500, EVERY = 40000, SHOW_FOR = 6000;
+    let opened = false;
+    const guardianBox = document.getElementById("dirGuardian");
+    if (guardianBox) guardianBox.addEventListener("click", () => { opened = true; hint.classList.remove("show"); });
+    function pop() {
+      if (opened || panel.classList.contains("open") || document.hidden) return;
+      hint.classList.add("show");
+      setTimeout(() => hint.classList.remove("show"), SHOW_FOR);
+    }
+    setTimeout(pop, FIRST);
+    setInterval(pop, EVERY);
+  })();
 })();

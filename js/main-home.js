@@ -50,6 +50,25 @@ async function loadFeaturedGames() {
   renderMarquee(track, html + html + html, games.length, true);
 
   startPicks(data.showcase || []);
+  setCommentStat(data.stats && data.stats.comments_analyzed);
+}
+
+// live number of comments the model has read, e.g. 26161 -> "26K+"
+function setCommentStat(total) {
+  const el = document.getElementById("statComments");
+  total = Number(total || 0);
+  if (!el || total <= 0) return;
+  let count = total, suffix = "+", decimals = 0;
+  if (total >= 1000000) { count = Math.floor(total / 100000) / 10; suffix = "M+"; decimals = 1; }
+  else if (total >= 10000) { count = Math.floor(total / 1000); suffix = "K+"; }
+  else if (total >= 1000) { count = Math.floor(total / 100) / 10; suffix = "K+"; decimals = 1; }
+  el.dataset.count = count;
+  el.dataset.suffix = suffix;
+  el.dataset.decimals = decimals;
+  // already counted up (or no animation): show the real value right away
+  if (el.dataset.done === "1" || el.textContent !== "0" + (el.dataset.suffix || "")) {
+    el.textContent = count.toFixed(decimals) + suffix;
+  }
 }
 
 loadFeaturedGames();
@@ -228,6 +247,7 @@ function startPicks(showcase) {
       const v = target * (1 - Math.pow(1 - t, 3));
       el.textContent = v.toFixed(decimals) + suffix;
       if (t < 1) requestAnimationFrame(frame);
+      else el.dataset.done = "1";
     })(start);
   }
 
@@ -262,4 +282,27 @@ function startPicks(showcase) {
     window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
     history.replaceState(null, "", "#how");
   });
+})();
+
+/* Hero: line the buttons up with Dir'a's head (wide screens only) */
+(function alignHeroButtons() {
+  const actions = document.querySelector(".mh-hero .mh-actions");
+  const bot = document.querySelector(".mh-stage .mh-guardian");
+  if (!actions || !bot) return;
+
+  function align() {
+    actions.style.marginTop = "";
+    if (window.innerWidth <= 900) return;
+    const head = bot.querySelector(".guardian-head") || bot;
+    const h = head.getBoundingClientRect();
+    const headMid = h.top + h.height / 2;
+    const a = actions.getBoundingClientRect();
+    const shift = headMid - (a.top + a.height / 2);
+    const base = parseFloat(getComputedStyle(actions).marginTop) || 0;
+    if (shift > 0) actions.style.marginTop = `${Math.round(base + shift)}px`;
+  }
+
+  window.addEventListener("load", align);
+  window.addEventListener("resize", align);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(align);
 })();

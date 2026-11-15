@@ -4,8 +4,9 @@
 // Every report gets a spam score from clear, explainable rules.
 // Score >= DIRA_SPAM_THRESHOLD  ->  the report goes to "Spam".
 // Employees can always override the decision (Not spam / Mark as spam).
-// A pretrained spam model can later add its own score through
-// dira_spam_model_score() without changing anything else.
+// On top of the rules, a pretrained spam model (mshenoda/roberta-spam,
+// running on the AI service) adds points through dira_spam_model_score().
+// If the AI service can't be reached, the rules alone decide.
 // =========================================================
 
 const DIRA_SPAM_THRESHOLD = 50;
@@ -86,7 +87,7 @@ function dira_spam_promo_reason($text) {
  * Optional: report_id (so it isn't compared with itself), date_reported.
  * Returns ['score' => int, 'reasons' => string[], 'is_spam' => bool]
  */
-function dira_spam_score($conn, array $r) {
+function dira_spam_score($conn, array $r, $useModel = true) {
     $score = 0;
     $reasons = [];
 
@@ -144,11 +145,15 @@ function dira_spam_score($conn, array $r) {
         }
     }
 
-    // 5) pretrained model (not connected yet — returns 0)
-    $model = dira_spam_model_score($title . "\n" . $other);
+    // 5) pretrained spam model: only for new reports, and only when the rules
+    //    above haven't already decided it's spam
+    $model = ($useModel && $score < DIRA_SPAM_THRESHOLD)
+        ? dira_spam_model_score($title . "\n" . $other)
+        : ['score' => 0, 'reason' => null];
     if ($model['score'] > 0) {
         $score += $model['score'];
-        if (!empty($model['reason'])) $reasons[] = $model['reason'];
+        // don't repeat what the rules already said
+        if (!empty($model['reason']) && !in_array('Looks like an advertisement', $reasons, true)) $reasons[] = $model['reason'];
     }
 
     return [
@@ -158,9 +163,57 @@ function dira_spam_score($conn, array $r) {
     ];
 }
 
-/** Placeholder for a pretrained spam model (e.g. hosted on the Hugging Face Space). */
+/**
+ * Model 2: pretrained spam classifier on the AI service (POST /spam-check).
+ * Returns up to 60 points when the model thinks the text is spam.
+ * Fails quietly (0 points) if the service isn't configured or doesn't answer in time.
+ */
 function dira_spam_model_score($text) {
-    return ['score' => 0, 'reason' => null];
+    static $unavailable = false;
+    $none = ['score' => 0, 'reason' => null];
+    $text = trim((string)$text);
+    if ($unavailable || mb_strlen($text) < 8) return $none;
+
+    $base = getenv('AI_API_URL') ?: '';
+    $token = getenv('ADMIN_TASK_TOKEN') ?: '';
+    $local = __DIR__ . '/mail-config.local.php';
+    if (($base === '' || $token === '') && is_file($local)) {
+        $cfg = include $local;
+        if (is_array($cfg)) {
+            $base = $base ?: ($cfg['ai_api_url'] ?? '');
+            $token = $token ?: ($cfg['admin_task_token'] ?? '');
+        }
+    }
+    $base = rtrim((string)$base, '/');
+    if ($base === '') { $unavailable = true; return $none; }
+
+    $ch = curl_init($base . '/spam-check');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'X-Admin-Token: ' . $token],
+        CURLOPT_POSTFIELDS     => json_encode(['text' => mb_substr($text, 0, 1000)]),
+    ]);
+    if (is_file(__DIR__ . '/cacert.pem')) curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+    $body = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $data = $body ? json_decode($body, true) : null;
+    if ($code !== 200 || !is_array($data) || !isset($data['spam_probability'])) {
+        $unavailable = true;
+        return $none;
+    }
+
+    $p = (float)$data['spam_probability'];
+    if ($p < 0.5) return $none;
+    return [
+        'score'  => (int)round($p * 60),   // 0.5 -> 30 points, 1.0 -> 60 points
+        // shown to employees in plain words; which part of the system decided stays in the back end
+        'reason' => 'Looks like an advert or a scam message',
+    ];
 }
 
 /** Save a score on a report (keeps a manual decision by an employee). */
@@ -187,7 +240,7 @@ function dira_spam_backfill($conn) {
     $rows = [];
     while ($row = $res->fetch_assoc()) $rows[] = $row;
     foreach ($rows as $row) {
-        dira_spam_save($conn, (int)$row['report_id'], dira_spam_score($conn, $row));
+        dira_spam_save($conn, (int)$row['report_id'], dira_spam_score($conn, $row, false)); // old reports: rules only (fast)
     }
 }
 

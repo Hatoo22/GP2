@@ -325,6 +325,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /* the assistant's "Open these complaints": put the game in the search box */
+  window.addEventListener("dira:complaints-search", (e) => {
+    const query = (e.detail && e.detail.query) || "";
+    gameFilter = null;
+    gameFilterBox.hidden = true;
+    searchInput.value = query;
+    page = 1;
+    render();
+    searchInput.focus();
+    searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
   /* ---------- events ---------- */
   tableBody.addEventListener("click", (e) => {
     const row = e.target.closest(".ac-row");
@@ -374,8 +386,15 @@ document.addEventListener("DOMContentLoaded", () => {
       complaints = data.complaints || [];
 
       const params = new URLSearchParams(location.search);
+      // opened for one game (from the dashboard): search for it instead of
+      // locking a filter, so another game can be searched right away
       const gid = params.get("game_id");
-      if (gid) setGameFilter(gid);
+      if (gid) {
+        const g = complaints.find((c) => String(c.game_id) === String(gid));
+        if (g && g.game_name) searchInput.value = g.game_name;
+      }
+      const q = params.get("q");
+      if (q) searchInput.value = q;
 
       const st = params.get("status");
       if (["Pending", "Reviewing", "Resolved"].includes(st)) {

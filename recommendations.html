@@ -3,13 +3,19 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Safer Recommendations</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <title>Safer alternatives | DIR'A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css?v=42">
 </head>
 
 <body class="fullPage">
-  <main class="page">
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
     <nav class="nav">
       <a href="main-home.html" class="logo logo-switch">
   <img src="images/black-logo.png" class="logo-light">
@@ -20,12 +26,27 @@
           Out</a><button onclick="toggleTheme()" class="icon">🌙</button><a class="icon profileIcon" href="profile.html">👤</a>
       </div>
     </nav>
-   <section class="section">
-  <h1>Safer Recommendation</h1>
-  <p id="recommendationNote" class="mini"></p>
+   <section class="section adminDash rxPage">
+  <a class="gx-back" id="rxBack" href="games.html">← Back to the game</a>
 
-  <div class="reco-stage" id="recoStage">
-    <div class="reco-track" id="recoTrack"></div>
+  <!-- the game they're leaving -->
+  <div class="rx-from" id="rxFrom" hidden>
+    <img id="rxFromImg" alt="">
+    <div>
+      <span class="rx-label">Instead of</span>
+      <h1 id="rxFromName"></h1>
+      <p class="rx-from-risk" id="rxFromRisk"></p>
+    </div>
+  </div>
+
+  <p class="rx-note" id="recommendationNote">Finding safer games…</p>
+
+  <div class="rx-layout" id="rxLayout" hidden>
+    <!-- ranked alternatives -->
+    <ol class="rx-list" id="rxList" aria-label="Safer alternatives"></ol>
+
+    <!-- side by side comparison -->
+    <article class="rx-compare" id="rxCompare" aria-live="polite"></article>
   </div>
 </section>
     <footer class="footer">
@@ -39,8 +60,8 @@
 </p>
     </footer>
   </main>
-  <script src="js/common.js"></script>
-  <script src="js/recommendations.js"></script>
+  <script src="js/common.js?v=9"></script>
+  <script src="js/recommendations.js?v=3"></script>
 </body>
 
 </html>

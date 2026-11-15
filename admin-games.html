@@ -3,11 +3,16 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Games Management | DIR'A Admin</title>
 
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css?v=42">
   <style>html.admin-checking body{visibility:hidden}</style>
   <script src="js/admin-guard.js"></script>
 </head>
@@ -15,7 +20,8 @@
 
 <body class="fullPage">
 
-  <main class="page">
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
 
 
     <!-- =========================================
@@ -113,7 +119,20 @@
         <button class="ag-tab" data-filter="high" type="button"><i style="--c:#ef4444"></i>High <span id="cntHigh">0</span></button>
         <button class="ag-tab" data-filter="new" type="button"><i style="--c:#94a3b8"></i>Not analyzed <span id="cntNew">0</span></button>
       </div>
-      <button class="btn ag-add" id="addGameBtn" type="button">+ Add Game</button>
+      <div class="ag-head-actions">
+        <button class="gx-btn" id="analyzeBtn" type="button">Analyze games</button>
+        <button class="btn ag-add" id="addGameBtn" type="button">+ Add Game</button>
+      </div>
+      </div>
+
+      <div class="an-banner" id="anBanner" hidden>
+        <div class="an-banner-top">
+          <strong id="anTitle">Analyzing…</strong>
+          <span class="mini" id="anCount"></span>
+          <button type="button" class="gx-btn" id="anStop">Stop</button>
+        </div>
+        <div class="an-bar"><i id="anBar"></i></div>
+        <p class="mini" id="anCurrent"></p>
       </div>
 
       <article class="ad-card ag-card">
@@ -265,13 +284,58 @@
 
 </div>
 
+<!-- =========================================
+     ANALYZE MODAL
+========================================== -->
+<div id="analyzeModal" class="admin-game-modal" role="dialog" aria-labelledby="anModalTitle">
+  <div class="admin-game-modal-box an-box">
+    <button id="closeAnalyzeModal" class="closeBtn" type="button" aria-label="Close">×</button>
+    <h2 id="anModalTitle">Analyze games</h2>
+    <p class="mini">Dir'a collects new comments from Steam and YouTube, runs the AI model and updates the risk scores.</p>
+
+    <div class="an-options" role="radiogroup">
+      <label class="an-option">
+        <input type="radio" name="anMode" value="one" checked>
+        <span>
+          <strong>One game</strong>
+          <small>Re-analyze a single game. Takes about a minute.</small>
+          <select id="anGame" aria-label="Game to analyze"></select>
+        </span>
+      </label>
+      <label class="an-option">
+        <input type="radio" name="anMode" value="new">
+        <span>
+          <strong>New games <em id="anNewCount"></em></strong>
+          <small>Only games that haven't been analyzed yet.</small>
+        </span>
+      </label>
+      <label class="an-option an-option--warn">
+        <input type="radio" name="anMode" value="all">
+        <span>
+          <strong>All games <em id="anAllCount"></em></strong>
+          <small>Re-analyzes every game. This can take a few hours.</small>
+        </span>
+      </label>
+    </div>
+
+    <p class="an-warning" id="anWarning" hidden></p>
+    <p class="mini an-msg" id="anMsg"></p>
+
+    <div class="an-actions">
+      <button type="button" class="gx-btn" id="anCancel">Cancel</button>
+      <button type="button" class="btn" id="anStart">Start analysis</button>
+    </div>
+  </div>
+</div>
+
   <!-- =========================================
        SCRIPTS
   ========================================== -->
 
-  <script src="js/common.js"></script>
+  <script src="js/common.js?v=9"></script>
 
-  <script src="js/admin-games.js?v=2"></script>
+  <script src="js/admin-games.js?v=3"></script>
+  <script src="js/admin-analyze.js?v=2"></script>
 
 
 </body>

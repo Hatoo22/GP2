@@ -1,266 +1,205 @@
-const recoStage = document.getElementById("recoStage");
-const recoTrack = document.getElementById("recoTrack");
-const recommendationNote = document.getElementById("recommendationNote");
+/* =========================================================
+   SAFER ALTERNATIVES
+   - "Instead of <game>" at the top
+   - ranked list of low-risk games that share its genres,
+     each showing how much lower the risk is
+   - the selected alternative is compared behavior by behavior
+   ========================================================= */
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const note = $("recommendationNote");
+  const layout = $("rxLayout");
+  const listEl = $("rxList");
+  const compareEl = $("rxCompare");
 
-const params = new URLSearchParams(window.location.search);
-const currentGameId = params.get("game_id");
+  const gameId = new URLSearchParams(location.search).get("game_id");
 
-let recommendedGames = [];
-let currentIndex = 0;
-let startX = 0;
-let isDragging = false;
-let dragMoved = 0;
+  const BEHAVIORS = [
+    ["bullying", "Bullying"],
+    ["hate_speech", "Hate speech"],
+    ["threat", "Threats"],
+    ["sexual_harassment", "Sexual harassment"],
+    ["other_toxicity", "Other toxicity"]
+  ];
 
-async function loadRecommendations() {
-  if (!currentGameId) {
-    recommendationNote.textContent = "Missing game_id. Open this page from Safer Alternative button.";
-    return;
+  let current = null;
+  let alternatives = [];
+  let selected = 0;
+
+  const esc = (v) =>
+    String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // some descriptions come from Steam already HTML-escaped (&quot;): decode first
+  const decode = (v) => { const t = document.createElement("textarea"); t.innerHTML = String(v ?? ""); return t.value; };
+  const genres = (v) => String(v || "").split(",").map((g) => g.trim()).filter(Boolean);
+  const risk = (g) => Number(g.overall_risk_percent || 0);
+  const color = (v) => (v >= 70 ? "#ef4444" : v >= 31 ? "#f59e0b" : "#22c55e");
+  const levelOf = (g) => g.overall_risk_level || (risk(g) >= 70 ? "High" : risk(g) >= 31 ? "Medium" : "Low");
+
+  // share of comments showing a behavior, same as the game page
+  function share(g, key) {
+    const total = Number(g.comments_count || 0);
+    if (total <= 0) return 0;
+    return Math.min(100, (Number(g[key] || 0) / total) * 100);
   }
 
-  try {
-    const currentGameResponse = await fetch(`api/game-details.php?game_id=${currentGameId}`);
-    const currentGameData = await currentGameResponse.json();
-
-    if (!currentGameData.success || !currentGameData.game) {
-      recommendationNote.textContent = "Cannot load current game details.";
-      return;
-    }
-
-    const currentGame = currentGameData.game;
-
-    const gamesResponse = await fetch("api/games.php");
-    const gamesData = await gamesResponse.json();
-
-    if (!gamesData.success || !gamesData.games) {
-      recommendationNote.textContent = "Cannot load games.";
-      return;
-    }
-
-    const allGames = gamesData.games;
-
-const currentRisk = Number(currentGame.overall_risk_percent || 0);
-
-recommendedGames = allGames
-  .map(game => ({
-    ...game,
-    matchingGenresCount: countMatchingGenres(game.genre, currentGame.genre)
-  }))
-  .filter(game => {
-    const notSameGame = String(game.game_id) !== String(currentGame.game_id);
-
-    const lowLevel = String(game.overall_risk_level || "")
-      .trim()
-      .toLowerCase() === "low";
-
-    const hasMatchingGenre = game.matchingGenresCount >= 1;
-
-    return notSameGame && lowLevel && hasMatchingGenre;
-  })
-  .sort((a, b) => {
-    if (b.matchingGenresCount !== a.matchingGenresCount) {
-      return b.matchingGenresCount - a.matchingGenresCount;
-    }
-
-    return Number(a.overall_risk_percent || 0) - Number(b.overall_risk_percent || 0);
-  });
-
-    if (!recommendedGames.length) {
-      recoTrack.innerHTML = "";
-      recommendationNote.innerHTML =
-        `No safer alternatives found with the same genre as <strong>${currentGame.game_name}</strong>.`;
-      return;
-    }
-
-    recommendationNote.innerHTML =
-      `Safer alternatives for <strong>${currentGame.game_name}</strong> based on the same genre: <strong>${currentGame.genre}</strong>.`;
-
-    renderRecommendationCards(recommendedGames);
-    updateRecoCarousel();
-
-  } catch (error) {
-    console.error(error);
-    recommendationNote.textContent = "Cannot load recommendations.";
+  function shared(a, b) {
+    const set = new Set(genres(b).map((x) => x.toLowerCase()));
+    return genres(a).filter((x) => set.has(x.toLowerCase()));
   }
-}
 
-function normalizeText(value) {
-  return String(value || "").trim().toLowerCase();
-}
+  /* ---------- render ---------- */
+  function renderFrom() {
+    $("rxFrom").hidden = false;
+    $("rxFromImg").src = current.image_url || "images/default-game.jpg";
+    $("rxFromName").textContent = current.game_name || "This game";
+    const r = risk(current);
+    $("rxFromRisk").innerHTML = `<b style="color:${color(r)}">${Math.round(r)}% risk</b> · ${esc(levelOf(current))} · ${esc(genres(current.genre).join(", "))}`;
+    $("rxBack").href = `game-details.html?game_id=${encodeURIComponent(current.game_id)}`;
+    document.title = `Safer than ${current.game_name} | DIR'A`;
+  }
 
-function renderTags(value) {
-  return getGenres(value)
-    .map(genre => `<span class="tag">${genre}</span>`)
-    .join("");
-}
+  function renderList() {
+    listEl.innerHTML = alternatives.map((g, i) => {
+      const drop = Math.max(0, Math.round(risk(current) - risk(g)));
+      const same = shared(g.genre, current.genre);
+      return `
+        <li>
+          <button type="button" class="rx-item${i === selected ? " is-active" : ""}" data-i="${i}" aria-pressed="${i === selected}">
+            <span class="rx-rank">${i + 1}</span>
+            <img src="${esc(g.image_url || "images/default-game.jpg")}" alt="" loading="lazy">
+            <span class="rx-item-text">
+              <strong>${esc(g.game_name)}</strong>
+              <small>${same.length ? `Also ${esc(same.slice(0, 2).join(" · "))}` : esc(genres(g.genre).slice(0, 2).join(" · "))}</small>
+            </span>
+            <span class="rx-drop" title="${drop} points lower risk">${drop > 0 ? `↓ ${drop}%` : `${Math.round(risk(g))}%`}</span>
+          </button>
+        </li>`;
+    }).join("");
+  }
 
-function getGenres(value) {
-  return String(value || "")
-    .toLowerCase()
-    .split(",")
-    .map(genre => genre.trim())
-    .filter(Boolean);
-}
+  function renderCompare() {
+    const g = alternatives[selected];
+    if (!g) return;
+    const rc = risk(current), rg = risk(g);
+    const drop = Math.max(0, Math.round(rc - rg));
+    const same = shared(g.genre, current.genre);
 
-function countMatchingGenres(gameGenre, currentGenre) {
-  const gameGenres = getGenres(gameGenre);
-  const currentGenres = getGenres(currentGenre);
+    const rows = BEHAVIORS.map(([key, label]) => {
+      const a = share(current, key), b = share(g, key);
+      return `
+        <li>
+          <span class="rx-b-label">${label}</span>
+          <span class="rx-b-bars">
+            <span class="rx-bar rx-bar--from"><i style="--w:${a}%"></i><em>${Math.round(a)}%</em></span>
+            <span class="rx-bar rx-bar--to"><i style="--w:${b}%"></i><em>${Math.round(b)}%</em></span>
+          </span>
+        </li>`;
+    }).join("");
 
-  return gameGenres.filter(g => currentGenres.includes(g)).length;
-}
-
-function renderRecommendationCards(games) {
-  recoTrack.innerHTML = games.map(game => {
-    const risk = Number(game.overall_risk_percent || 0).toFixed(2);
-    const riskLevel = game.overall_risk_level || "Low";
-    const riskClass = `risk-${String(riskLevel).toLowerCase()}`;
-
-    return `
-      <article class="reco-card">
-       <div class="reco-thumb">
-  <img src="${game.image_url || "images/default-game.jpg"}" alt="${game.game_name || "Game image"}">
-  <span class="pill left risk-score-pill">${risk}% Risk</span>
-<span class="pill right ${riskClass}">${riskLevel}</span>
-</div>
-
-        <h2>${game.game_name || "Game Name"}</h2>
-
-        <p class="mini">${game.description || ""}</p>
-
-        <div class="tags">
-  ${renderTags(game.genre)}
-  ${game.platform ? `<span class="tag">${game.platform}</span>` : ""}
-</div>
-
-         <div class="cardActions">
-          <a class="btn" href="game-details.html?game_id=${game.game_id}">
-            View Details
-          </a>
+    compareEl.innerHTML = `
+      <div class="rx-c-head">
+        <img src="${esc(g.image_url || "images/default-game.jpg")}" alt="">
+        <div>
+          <h2>${esc(g.game_name)}</h2>
+          <p>${esc(decode(g.description || ""))}</p>
+          <div class="gx-tags">${genres(g.genre).map((x) => `<span>${esc(x)}</span>`).join("")}</div>
         </div>
-      </article>
-    `;
-  }).join("");
-}
+      </div>
 
-function getRecoCards() {
-  return Array.from(document.querySelectorAll(".reco-card"));
-}
+      <div class="rx-c-score">
+        <div class="rx-score">
+          <span>${esc(current.game_name)}</span>
+          <strong style="color:${color(rc)}">${Math.round(rc)}%</strong>
+        </div>
+        <div class="rx-arrow" aria-hidden="true">→</div>
+        <div class="rx-score rx-score--to">
+          <span>${esc(g.game_name)}</span>
+          <strong style="color:${color(rg)}">${Math.round(rg)}%</strong>
+        </div>
+        <p class="rx-verdict">${drop > 0
+          ? `<b>${drop} points lower risk</b>${same.length ? `, and it's also ${esc(same.join(", "))}.` : "."}`
+          : "A low-risk game in a similar genre."}</p>
+      </div>
 
-function updateRecoCarousel() {
-  const recoCards = getRecoCards();
+      <div class="rx-c-break">
+        <div class="rx-legend">
+          <span><i class="rx-dot rx-dot--from"></i>${esc(current.game_name)}</span>
+          <span><i class="rx-dot rx-dot--to"></i>${esc(g.game_name)}</span>
+        </div>
+        <ul class="rx-behaviors">${rows}</ul>
+      </div>
 
-  recoCards.forEach((card, index) => {
-    const offset = index - currentIndex;
+      <div class="rx-c-actions">
+        <a class="btn" href="game-details.html?game_id=${encodeURIComponent(g.game_id)}">Open ${esc(g.game_name)}</a>
+        ${alternatives.length > 1 ? `<button type="button" class="gx-btn" id="rxNext">Next alternative</button>` : ""}
+      </div>`;
 
-    let translateX = offset * 360;
-    let scale = 0.78;
-    let opacity = 0.35;
-    let zIndex = 1;
-    let rotateY = 0;
+    const next = $("rxNext");
+    if (next) next.addEventListener("click", () => select((selected + 1) % alternatives.length, true));
+  }
 
-    if (offset === 0) {
-      translateX = 0;
-      scale = 1;
-      opacity = 1;
-      zIndex = 10;
-      rotateY = 0;
-      card.classList.add("active");
-    } else if (offset === -1) {
-      translateX = -310;
-      scale = 0.82;
-      opacity = 0.75;
-      zIndex = 6;
-      rotateY = 10;
-      card.classList.remove("active");
-    } else if (offset === 1) {
-      translateX = 310;
-      scale = 0.82;
-      opacity = 0.75;
-      zIndex = 6;
-      rotateY = -10;
-      card.classList.remove("active");
-    } else if (offset < -1) {
-      translateX = -520;
-      scale = 0.68;
-      opacity = 0.18;
-      zIndex = 2;
-      rotateY = 14;
-      card.classList.remove("active");
-    } else if (offset > 1) {
-      translateX = 520;
-      scale = 0.68;
-      opacity = 0.18;
-      zIndex = 2;
-      rotateY = -14;
-      card.classList.remove("active");
+  function select(i, focusList) {
+    selected = i;
+    listEl.querySelectorAll(".rx-item").forEach((b, n) => {
+      b.classList.toggle("is-active", n === i);
+      b.setAttribute("aria-pressed", String(n === i));
+    });
+    renderCompare();
+    if (focusList) listEl.querySelectorAll(".rx-item")[i]?.focus({ preventScroll: true });
+    if (window.innerWidth < 900) compareEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  listEl.addEventListener("click", (e) => {
+    const b = e.target.closest(".rx-item");
+    if (b) select(Number(b.dataset.i));
+  });
+  listEl.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const n = alternatives.length;
+    select((selected + (e.key === "ArrowDown" ? 1 : n - 1)) % n, true);
+  });
+
+  /* ---------- load ---------- */
+  async function load() {
+    if (!gameId) {
+      note.textContent = "Open this page from a game's \"Safer alternative\" button.";
+      return;
     }
+    try {
+      const [d1, d2] = await Promise.all([
+        fetch(`api/game-details.php?game_id=${encodeURIComponent(gameId)}`).then((r) => r.json()),
+        fetch("api/games.php").then((r) => r.json())
+      ]);
+      if (!d1.success || !d1.game) throw new Error("Couldn't load this game.");
+      if (!d2.success) throw new Error("Couldn't load the games list.");
 
-    card.style.transform =
-      `translate(-50%, -50%) translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`;
+      current = d1.game;
+      renderFrom();
 
-    card.style.opacity = opacity;
-    card.style.zIndex = zIndex;
-    card.style.filter = offset === 0 ? "blur(0px)" : "blur(0.4px)";
-  });
-}
+      alternatives = (d2.games || [])
+        .map((g) => ({ ...g, _shared: shared(g.genre, current.genre).length }))
+        .filter((g) =>
+          String(g.game_id) !== String(current.game_id) &&
+          String(g.overall_risk_level || "").toLowerCase() === "low" &&
+          g.analysis_status === "analyzed" && Number(g.comments_count || 0) > 0 &&
+          g._shared > 0)
+        .sort((a, b) => b._shared - a._shared || risk(a) - risk(b))
+        .slice(0, 8);
 
-function clampIndex(index) {
-  const recoCards = getRecoCards();
+      if (!alternatives.length) {
+        note.innerHTML = `We couldn't find a low-risk game that shares a genre with <strong>${esc(current.game_name)}</strong> yet.`;
+        return;
+      }
 
-  if (index < 0) return 0;
-  if (index > recoCards.length - 1) return recoCards.length - 1;
-
-  return index;
-}
-
-if (recoStage) {
-  recoStage.addEventListener("mousedown", (e) => {
-    isDragging = true;
-    startX = e.clientX;
-    dragMoved = 0;
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    dragMoved = e.clientX - startX;
-  });
-
-  window.addEventListener("mouseup", () => {
-    if (!isDragging) return;
-
-    if (dragMoved < -60) {
-      currentIndex = clampIndex(currentIndex + 1);
-    } else if (dragMoved > 60) {
-      currentIndex = clampIndex(currentIndex - 1);
+      note.textContent = `${alternatives.length} low-risk ${alternatives.length === 1 ? "game" : "games"} in the same genre, best match first.`;
+      layout.hidden = false;
+      renderList();
+      renderCompare();
+    } catch (err) {
+      note.textContent = err.message || "Couldn't load safer alternatives.";
     }
+  }
 
-    isDragging = false;
-    dragMoved = 0;
-    updateRecoCarousel();
-  });
-
-  recoStage.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-    isDragging = true;
-  });
-
-  recoStage.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    dragMoved = e.touches[0].clientX - startX;
-  });
-
-  recoStage.addEventListener("touchend", () => {
-    if (!isDragging) return;
-
-    if (dragMoved < -50) {
-      currentIndex = clampIndex(currentIndex + 1);
-    } else if (dragMoved > 50) {
-      currentIndex = clampIndex(currentIndex - 1);
-    }
-
-    isDragging = false;
-    dragMoved = 0;
-    updateRecoCarousel();
-  });
-}
-
-loadRecommendations();
+  load();
+})();

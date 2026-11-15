@@ -117,6 +117,23 @@ $weights = [
     'other_toxicity'    => 0.156
 ];
 
+// comments from Dir'a are kept (created outside the transaction: DDL would commit it)
+$conn->query("
+    CREATE TABLE IF NOT EXISTS site_comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        game_id INT NOT NULL,
+        user_id INT NULL,
+        comment TEXT NOT NULL,
+        threat TINYINT(1) NOT NULL DEFAULT 0,
+        bullying TINYINT(1) NOT NULL DEFAULT 0,
+        sexual_harassment TINYINT(1) NOT NULL DEFAULT 0,
+        hate_speech TINYINT(1) NOT NULL DEFAULT 0,
+        other_toxicity TINYINT(1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_game (game_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
 $conn->begin_transaction();
 
 try {
@@ -176,6 +193,16 @@ try {
     );
     $stmt->execute();
     $stmt->close();
+
+    // keep the comment and what the model found, so a later re-analysis
+    // of the game (Steam + YouTube) adds the comments from Dir'a back in
+    $p = [];
+    foreach ($labels as $label) $p[$label] = !empty($prediction[$label]) ? 1 : 0;
+    $uid = (int)$_SESSION['user_id'];
+    $ins = $conn->prepare("INSERT INTO site_comments (game_id, user_id, comment, threat, bullying, sexual_harassment, hate_speech, other_toxicity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $ins->bind_param('iisiiiii', $gameId, $uid, $comment, $p['threat'], $p['bullying'], $p['sexual_harassment'], $p['hate_speech'], $p['other_toxicity']);
+    $ins->execute();
+    $ins->close();
 
     $conn->commit();
 

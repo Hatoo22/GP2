@@ -21,7 +21,7 @@ const ROLE_NAV = {
   admin: {
     home: "admin-dashboard.html",
     label: "Administrator",
-    links: [["admin-dashboard.html", "Dashboard"], ["admin-games.html", "Games"], ["admin-users.html", "Users"], ["admin-complaints.html", "Complaints"]]
+    links: [["admin-dashboard.html", "Dashboard"], ["admin-games.html", "Games"], ["admin-users.html", "Users"], ["admin-complaints.html", "Complaints"], ["admin-suggestions.html", "Suggestions"]]
   }
 };
 

@@ -5,11 +5,16 @@
 
   <meta charset="UTF-8">
 
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Log In | DIR’A</title>
 
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css?v=42">
   <link rel="stylesheet" href="guardian.css?v=7">
 
 </head>
@@ -18,7 +23,8 @@
 <body class="authPage authLoginPage">
 
 
-  <!-- BACKGROUND -->
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<!-- BACKGROUND -->
   <div class="authBackdrop" aria-hidden="true">
 
     <div class="authGlow authGlowOne"></div>
@@ -244,7 +250,7 @@
 
 
 
-  <script src="js/common.js"></script>
+  <script src="js/common.js?v=9"></script>
 
   <script src="js/guardian.js"></script>
 

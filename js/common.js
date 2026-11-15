@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('dark-mode');
   } else {
     document.body.classList.remove('dark-mode');
+    document.documentElement.classList.remove('dark-pre');
     localStorage.setItem('diraTheme', 'light');
   }
 
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
+  document.documentElement.classList.toggle('dark-pre', document.body.classList.contains('dark-mode'));
 
   if (document.body.classList.contains('dark-mode')) {
     localStorage.setItem('diraTheme', 'dark');
@@ -355,6 +357,10 @@ function applyRoleNavigation() {
 
     <a href="admin-complaints.html">
       Complaints
+    </a>
+
+    <a href="admin-suggestions.html">
+      Suggestions
     </a>
 
     <a
