@@ -1,6 +1,6 @@
 <?php
 // POST {email} -> emails a one-time "set a new password" link (valid 1 hour).
-// Always answers the same way, so nobody can find out which emails have accounts.
+// Tells the person when no account uses this email, so they know to sign up instead.
 require_once __DIR__ . '/session.php';
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/config.php';
@@ -17,7 +17,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     out(['success' => false, 'message' => 'Please enter a valid email address.'], 400);
 }
 
-$generic = ['success' => true, 'message' => "If an account exists for this email, we've sent a link to reset the password. Check your inbox and spam folder."];
+$generic = ['success' => true, 'message' => "We've sent a link to reset your password. Check your inbox and spam folder."];
 
 if (!dira_mail_ready()) {
     out(['success' => false, 'message' => "Password reset isn't available right now. Please contact the administrator."], 503);
@@ -32,8 +32,13 @@ try {
     $user = $st->get_result()->fetch_assoc();
     $st->close();
 
-    // unknown email, invited admin (uses the invite link) or a link was just sent: same answer
-    if (!$user || strtolower($user['status']) === 'invited') out($generic);
+    if (!$user) {
+        out(['success' => false, 'no_account' => true, 'message' => "There's no Dir'a account with this email. Check the spelling, or"], 404);
+    }
+    if (strtolower($user['status']) === 'invited') {
+        out(['success' => false, 'message' => "This account hasn't been set up yet. Use the invitation link in your email to set your password."], 409);
+    }
+    // a link was sent a minute ago: don't send another one
     if (dira_token_sent_recently($conn, (int)$user['user_id'], 'reset')) out($generic);
 
     $token = dira_token_create($conn, (int)$user['user_id'], 'reset', 1);

@@ -553,3 +553,65 @@ function handleSessionExpired(data) {
     })
     .catch(() => {});
 })();
+
+/* =========================================================
+   PHONE MENU: on small screens the page links fold into a
+   ☰ button; tapping it opens them under the top bar.
+   ========================================================= */
+(function phoneMenu() {
+  function pageLinks(links) {
+    return [...links.children].filter((el) => el.matches("a:not(.btn):not(.icon)"));
+  }
+
+  function ensureButton() {
+    const nav = document.querySelector(".nav");
+    const links = nav && nav.querySelector(".links");
+    if (!links || !pageLinks(links).length) return;
+    if (links.querySelector(".navMenuBtn")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "navMenuBtn";
+    btn.setAttribute("aria-label", "Open menu");
+    btn.setAttribute("aria-expanded", nav.classList.contains("menu-open") ? "true" : "false");
+    btn.innerHTML = "<span></span><span></span><span></span>";
+    links.appendChild(btn);
+  }
+
+  function setOpen(nav, open) {
+    nav.classList.toggle("menu-open", open);
+    const btn = nav.querySelector(".navMenuBtn");
+    if (btn) {
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const nav = document.querySelector(".nav");
+    if (!nav) return;
+    if (e.target.closest(".navMenuBtn")) {
+      setOpen(nav, !nav.classList.contains("menu-open"));
+      return;
+    }
+    // a page link was chosen, or a tap outside the bar: close
+    if (nav.classList.contains("menu-open") &&
+        (!nav.contains(e.target) || e.target.closest(".links > a:not(.btn):not(.icon)"))) {
+      setOpen(nav, false);
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    const nav = document.querySelector(".nav.menu-open");
+    if (e.key === "Escape" && nav) setOpen(nav, false);
+  });
+
+  function start() {
+    ensureButton();
+    const links = document.querySelector(".nav .links");
+    // some pages rebuild the menu (role, profile): put the button back
+    if (links && "MutationObserver" in window) {
+      new MutationObserver(ensureButton).observe(links, { childList: true });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();

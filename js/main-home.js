@@ -93,7 +93,7 @@ function startPicks(showcase) {
     const level = String(g.overall_risk_level || "Low").toLowerCase();
     const pct = Number(g.overall_risk_percent || 0);
     return `
-      <a class="mh-pick" href="signup.html" data-level="${level}" style="--risk:${COLORS[level] || COLORS.low}">
+      <button type="button" class="mh-pick" data-level="${level}" style="--risk:${COLORS[level] || COLORS.low}">
         <img src="${esc(g.image_url)}" alt="">
         <div class="mh-pick-body">
           <strong>${esc(g.game_name)}</strong>
@@ -103,7 +103,7 @@ function startPicks(showcase) {
           </div>
         </div>
         <span class="mh-pick-level">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
-      </a>`;
+      </button>`;
   }).join("");
 
   let current = null;
@@ -130,17 +130,33 @@ function startPicks(showcase) {
     if (typeof guardianReact === "function") guardianReact(card.dataset.level);
   }
 
+  // phones have no hover: a tap shows the reaction, tapping the same card again clears it
+  const isTouch = window.matchMedia("(hover: none)").matches;
+  const hint = wrap.querySelector(".mh-picks-hint");
+  if (isTouch && hint) hint.textContent = "Tap a game to see how Dir'a reacts";
+  list.addEventListener("click", (e) => {
+    const card = e.target.closest(".mh-pick");
+    if (!card) return;
+    e.preventDefault();
+    if (isTouch) react(card === current ? null : card);
+    else react(card);
+  });
+  document.addEventListener("click", (e) => {
+    if (isTouch && current && !list.contains(e.target)) react(null);
+  });
+
   list.addEventListener("mouseover", (e) => {
+    if (isTouch) return;
     const card = e.target.closest(".mh-pick");
     if (card) react(card);
   });
-  list.addEventListener("mouseleave", () => react(null));
+  list.addEventListener("mouseleave", () => { if (!isTouch) react(null); });
   list.addEventListener("focusin", (e) => {
     const card = e.target.closest(".mh-pick");
     if (card) react(card);
   });
   list.addEventListener("focusout", (e) => {
-    if (!list.contains(e.relatedTarget)) react(null);
+    if (!isTouch && !list.contains(e.relatedTarget)) react(null);
   });
 
   // fill the meters once the cards are on screen
@@ -233,8 +249,7 @@ function startPicks(showcase) {
 (function initStats() {
   const nums = document.querySelectorAll(".mh-stat-num[data-count]");
   if (!nums.length) return;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion || !("IntersectionObserver" in window)) return;
+  if (!("IntersectionObserver" in window)) return;
 
   function run(el) {
     const target = Number(el.dataset.count);
@@ -249,6 +264,10 @@ function startPicks(showcase) {
       if (t < 1) requestAnimationFrame(frame);
       else el.dataset.done = "1";
     })(start);
+    // safety: if the tab isn't drawing frames, still land on the real number
+    setTimeout(() => {
+      if (!el.dataset.done) { el.textContent = target.toFixed(decimals) + suffix; el.dataset.done = "1"; }
+    }, dur + 400);
   }
 
   const io = new IntersectionObserver((entries) => {

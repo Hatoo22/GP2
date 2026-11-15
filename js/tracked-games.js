@@ -57,7 +57,11 @@ async function loadTracked() {
   if (handleSessionExpired(data)) return;
 
   if (data.success && data.games.length === 0) {
-    grid.innerHTML = `<p>No tracked games yet.</p>`;
+    grid.innerHTML = `<div class="mc-empty tg-empty">
+        <h3>No games in your list yet</h3>
+        <p>Want to keep an eye on a game? Open its page and press Track, or tap the heart on any game.</p>
+        <a class="btn" href="games.html">Browse games</a>
+      </div>`;
   } else if (data.success) {
     grid.innerHTML = data.games.map(card).join("");
   } else {
