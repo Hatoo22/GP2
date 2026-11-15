@@ -18,6 +18,8 @@ SELECT
   analysis_status
 
 FROM games
+WHERE COALESCE(image_url, '') <> ''
+  AND LOWER(game_name) NOT LIKE '%test%'
 ORDER BY created_at DESC
 LIMIT 10
 ";
@@ -60,10 +62,22 @@ foreach (['Low', 'Medium', 'High'] as $level) {
   }
 }
 
+// Totals for the "why it matters" numbers
+$totals = $conn->query("
+  SELECT
+    SUM(analysis_status = 'analyzed' AND COALESCE(comments_count, 0) > 0) AS games_analyzed,
+    SUM(CASE WHEN analysis_status = 'analyzed' THEN COALESCE(comments_count, 0) ELSE 0 END) AS comments_analyzed
+  FROM games
+")->fetch_assoc();
+
 // Return the recent games as a JSON response
 echo json_encode([
   "success" => true,
   "games" => $games,
-  "showcase" => $showcase
+  "showcase" => $showcase,
+  "stats" => [
+    "games_analyzed" => (int)($totals['games_analyzed'] ?? 0),
+    "comments_analyzed" => (int)($totals['comments_analyzed'] ?? 0)
+  ]
 ], JSON_UNESCAPED_UNICODE);
 ?>

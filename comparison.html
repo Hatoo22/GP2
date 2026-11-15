@@ -3,13 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Game Comparison</title>
-    <link rel="stylesheet" href="style.css?v=7">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="style.css?v=42">
 </head>
 
 <body class="fullPage">
-    <main class="page">
+      <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
         <nav class="nav">
                        <a href="main-home.html" class="logo logo-switch">
   <img src="images/black-logo.png" class="logo-light">
@@ -20,24 +26,23 @@
                     href="main-home.html">Log Out</a><button onclick="toggleTheme()" class="icon">🌙</button>
                     <a class="icon profileIcon" href="profile.html">👤</a>
         </nav>
-       <section class="section compare-setup">
-  <h2>Game Comparison</h2>
-  <p class="mini">
-    Comparing your selected games based on risk level and toxicity breakdown.
-  </p>
+       <section class="section compare-setup adminDash cmpPage">
+  <a class="gx-back" href="games.html">← Back to games</a>
+  <h1>Compare games</h1>
+  <p class="mini">Overall risk and each harmful behavior, side by side.</p>
 
   <p id="compareMessage" class="mini"></p>
 </section>
 
 <section
   id="comparisonResult"
-  class="section comparison-result"
+  class="section comparison-result adminDash cmpPage"
   style="display:none;"
 >
   <div id="comparisonGrid" class="comparisonGrid"></div>
 
-  <div class="result-box">
-    <h2>Comparison Summary</h2>
+  <div class="result-box cmp-summary">
+    <h2>In short</h2>
     <p id="resultText"></p>
   </div>
 </section>
@@ -52,8 +57,8 @@
 </p>
         </footer>
     </main>
-    <script src="js/common.js"></script>
-<script src="js/comparison.js?v=5"></script>
+    <script src="js/common.js?v=9"></script>
+<script src="js/comparison.js?v=7"></script>
 </body>
 
 </html>

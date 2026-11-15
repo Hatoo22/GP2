@@ -95,17 +95,18 @@ function dira_send_mail(string $toEmail, string $toName, string $subject, string
     return ['ok' => true, 'error' => ''];
 }
 
-// Simple branded email layout
+// Branded email layout in Dir'a's dark theme (black + orange)
 function dira_mail_layout(string $title, string $intro, string $buttonText, string $url, string $note): string {
     $e = fn($s) => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
-    return '<!doctype html><html><body style="margin:0;background:#f3f7f8;font-family:Arial,Helvetica,sans-serif;color:#0f172a">'
-      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px"><tr><td align="center">'
-      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;padding:32px">'
-      . '<tr><td style="font-size:22px;font-weight:bold;color:#32c5d2;padding-bottom:18px">Dir\'a</td></tr>'
-      . '<tr><td style="font-size:20px;font-weight:bold;padding-bottom:10px">' . $e($title) . '</td></tr>'
-      . '<tr><td style="font-size:15px;line-height:1.6;color:#334155;padding-bottom:24px">' . $e($intro) . '</td></tr>'
-      . '<tr><td style="padding-bottom:24px"><a href="' . $e($url) . '" style="display:inline-block;background:#32c5d2;color:#ffffff;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:999px">' . $e($buttonText) . '</a></td></tr>'
-      . '<tr><td style="font-size:13px;line-height:1.6;color:#64748b">' . $e($note) . '</td></tr>'
-      . '<tr><td style="font-size:12px;color:#94a3b8;padding-top:18px;word-break:break-all">If the button doesn\'t work, copy this link:<br>' . $e($url) . '</td></tr>'
+    return '<!doctype html><html><head><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>'
+      . '<body style="margin:0;padding:0;background:#0d0d0c;font-family:Arial,Helvetica,sans-serif;color:#f5f5f4">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0d0d0c" style="background:#0d0d0c;padding:36px 12px"><tr><td align="center">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#141311" style="max-width:520px;background:#141311;border:1px solid #2a241e;border-radius:18px;padding:34px">'
+      . '<tr><td style="font-size:22px;font-weight:bold;color:#ff9d3d;padding-bottom:22px;letter-spacing:0.5px">Dir\'a</td></tr>'
+      . '<tr><td style="font-size:21px;font-weight:bold;color:#f5f5f4;padding-bottom:12px">' . $e($title) . '</td></tr>'
+      . '<tr><td style="font-size:15px;line-height:1.65;color:#d6d3d1;padding-bottom:26px">' . $e($intro) . '</td></tr>'
+      . '<tr><td style="padding-bottom:26px"><a href="' . $e($url) . '" style="display:inline-block;background:#ff9d3d;color:#1a0f05;text-decoration:none;font-weight:bold;padding:13px 28px;border-radius:999px">' . $e($buttonText) . '</a></td></tr>'
+      . '<tr><td style="font-size:13px;line-height:1.6;color:#a8a29e;border-top:1px solid #2a241e;padding-top:18px">' . $e($note) . '</td></tr>'
+      . '<tr><td style="font-size:12px;line-height:1.5;color:#78716c;padding-top:14px;word-break:break-all">If the button doesn\'t work, copy this link:<br><a href="' . $e($url) . '" style="color:#ff9d3d">' . $e($url) . '</a></td></tr>'
       . '</table></td></tr></table></body></html>';
 }

@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
         </td>
         <td class="ag-right">
+          <button type="button" class="ag-view ag-analyze" data-id="${escapeHtml(g.game_id)}" title="Run the analysis for this game">Analyze</button>
           <a class="ag-view" href="game-details.html?game_id=${encodeURIComponent(g.game_id)}">View →</a>
         </td>
       </tr>`;
@@ -182,6 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await res.json();
     if (!data.success) throw new Error(data.message || "Unable to load games.");
     games = data.games || [];
+    window.diraAdminGames = games; // used by the Analyze window
     updateCounts();
     render();
   } catch (error) {
@@ -217,6 +219,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") addGameModal.classList.remove("show");
   });
+
+  // opened from Suggestions ("Find game"): open the Add Game window and search Steam
+  const suggested = new URLSearchParams(location.search).get("add");
+  if (suggested) {
+    setTimeout(() => {
+      addGameModal.classList.add("show");
+      steamGameSearch.value = suggested;
+      searchSteamGames();
+      history.replaceState(null, "", location.pathname);
+    }, 300);
+  }
 
   async function searchSteamGames() {
     const query = steamGameSearch.value.trim();

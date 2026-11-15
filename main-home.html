@@ -3,14 +3,20 @@
 
 <head>
     <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>DIR'A Platform</title>
     <link rel="stylesheet" href="guardian.css?v=7">
-    <link rel="stylesheet" href="style.css?v=24">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="style.css?v=42">
 </head>
 
 <body class="fullPage mainHome">
-    <main class="page">
+      <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
         <nav class="nav">
             <a href="main-home.html" class="logo logo-switch">
   <img src="images/black-logo.png" class="logo-light">
@@ -170,8 +176,8 @@
             <span class="mh-stat-label">people play video games</span>
           </div>
           <div class="mh-stat">
-            <span class="mh-stat-num" data-count="5">5</span>
-            <span class="mh-stat-label">harmful behaviors we detect</span>
+            <span class="mh-stat-num" id="statComments" data-count="26" data-suffix="K+">26K+</span>
+            <span class="mh-stat-label">player comments read by our AI</span>
           </div>
         </section>
 
@@ -218,10 +224,10 @@
 </p>
         </footer>
     </main>
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=9"></script>
   <script src="js/marquee.js?v=7"></script>
     <script src="js/guardian.js?v=2"></script>
-    <script src="js/main-home.js?v=10"></script>
+    <script src="js/main-home.js?v=13"></script>
 </body>
 
 </html>

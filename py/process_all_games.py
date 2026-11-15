@@ -367,8 +367,9 @@ def update_game_with_single_comment(game_id, prediction):
 # SAVE RESULTS
 # =========================
 
-def save_analyzed_result(game_id, scores, overall, level, comments_count):
-    cursor.execute("""
+def save_analyzed_result(game_id, scores, overall, level, comments_count, db=None):
+    db_conn, db_cursor = db or (conn, cursor)
+    db_cursor.execute("""
     UPDATE games
     SET
       threat = %s,
@@ -393,12 +394,12 @@ def save_analyzed_result(game_id, scores, overall, level, comments_count):
         comments_count,
         game_id
     ))
+    db_conn.commit()
 
-    conn.commit()
 
-
-def save_no_comments_result(game_id):
-    cursor.execute("""
+def save_no_comments_result(game_id, db=None):
+    db_conn, db_cursor = db or (conn, cursor)
+    db_cursor.execute("""
     UPDATE games
     SET
       threat = 0,
@@ -413,36 +414,35 @@ def save_no_comments_result(game_id):
       analyzed_at = CURRENT_TIMESTAMP
     WHERE game_id = %s
     """, (game_id,))
-
-    conn.commit()
-
+    db_conn.commit()
 
 
 # =========================
-# MAIN PIPELINE
+# PIPELINE
 # =========================
 
-if __name__ == "__main__":
+def count_games(mode="all", game_id=None):
+    """How many games a run would process (used by the admin page)."""
+    db_conn = mysql.connector.connect(**DB_CONFIG)
+    db_cursor = db_conn.cursor(dictionary=True)
+    try:
+        return len(select_games(db_cursor, mode, game_id))
+    finally:
+        db_cursor.close()
+        db_conn.close()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--game-id', type=int, help='Process one game, including previously analyzed games')
-    parser.add_argument('--dry-run', action='store_true', help='Fetch and classify without database writes')
-    parser.add_argument('--refresh-youtube', action='store_true', help="Ignore this month's cache")
-    parser.add_argument('--only-new', action='store_true', help='Process only games that have not been analyzed yet')
-    args = parser.parse_args()
-    cursor.execute("SELECT game_name FROM games")
-    catalog = [row['game_name'] for row in cursor.fetchall() if row['game_name']]
 
-    if args.game_id:
+def select_games(db_cursor, mode="all", game_id=None):
+    if mode == "one":
         # one specific game (also re-analyzes it if it was analyzed before)
-        cursor.execute("""
+        db_cursor.execute("""
             SELECT game_id, api_game_id, game_name
             FROM games
             WHERE game_id = %s
-        """, (args.game_id,))
-    elif args.only_new:
+        """, (game_id,))
+    elif mode == "new":
         # games added from the admin page that are still waiting for analysis
-        cursor.execute("""
+        db_cursor.execute("""
             SELECT game_id, api_game_id, game_name
             FROM games
             WHERE COALESCE(analysis_status, 'no_comments') <> 'analyzed'
@@ -450,84 +450,166 @@ if __name__ == "__main__":
             ORDER BY game_id ASC
         """)
     else:
-        cursor.execute("""
+        db_cursor.execute("""
             SELECT game_id, api_game_id, game_name
             FROM games
             ORDER BY game_id ASC
         """)
+    return db_cursor.fetchall()
 
-    games = cursor.fetchall()
 
-    if args.game_id and not games:
-        print(f"No game found with game_id={args.game_id}.")
+def site_extras(db_cursor, game_id):
+    """
+    What players added on Dir'a itself, so a re-analysis doesn't lose it:
+      - comments written on the game page (site_comments, labels from the model)
+      - resolved, non-spam complaints that were counted in the score
+    Returns (counts per label, number of items).
+    """
+    counts = {"threat": 0, "bullying": 0, "sexual_harassment": 0, "hate_speech": 0, "other_toxicity": 0}
+    n = 0
+    try:
+        db_cursor.execute("""
+            SELECT COUNT(*) AS n,
+                   COALESCE(SUM(threat), 0) AS threat,
+                   COALESCE(SUM(bullying), 0) AS bullying,
+                   COALESCE(SUM(sexual_harassment), 0) AS sexual_harassment,
+                   COALESCE(SUM(hate_speech), 0) AS hate_speech,
+                   COALESCE(SUM(other_toxicity), 0) AS other_toxicity
+            FROM site_comments WHERE game_id = %s
+        """, (game_id,))
+        row = db_cursor.fetchone() or {}
+        n += int(row.get("n") or 0)
+        for k in counts:
+            counts[k] += int(row.get(k) or 0)
+    except Exception:
+        pass  # table not created yet
+    try:
+        # same mapping as api/report-score.php
+        db_cursor.execute("""
+            SELECT COUNT(*) AS n,
+                   COALESCE(SUM(behavior_threat = 1), 0) AS threat,
+                   COALESCE(SUM(behavior_bullying = 1), 0) AS bullying,
+                   COALESCE(SUM(behavior_sexual = 1), 0) AS sexual_harassment,
+                   COALESCE(SUM(behavior_hate = 1), 0) AS hate_speech,
+                   COALESCE(SUM(behavior_toxic = 1 OR TRIM(COALESCE(behavior_other, '')) <> ''), 0) AS other_toxicity
+            FROM reports
+            WHERE game_id = %s AND counted_in_score = 1
+        """, (game_id,))
+        row = db_cursor.fetchone() or {}
+        n += int(row.get("n") or 0)
+        for k in counts:
+            counts[k] += int(row.get(k) or 0)
+    except Exception:
+        pass  # column not created yet
+    return counts, n
 
-    print([g["game_id"] for g in games])
-    print(f"Found {len(games)} games to process.")
 
-    for game in games:
-        game_id = game["game_id"]
-        steam_app_id = game["api_game_id"]
-        game_name = game["game_name"]
+def process_games(mode="all", game_id=None, refresh_youtube=False, dry_run=False,
+                  on_progress=None, should_stop=None):
+    """
+    Fetch comments, run the model and save the results.
+    mode: "one" (needs game_id), "new" (not analyzed yet) or "all".
+    on_progress(done, total, game_name, message) is called as it goes.
+    Uses its own database connection, so it can run in a background thread.
+    Returns a summary dict.
+    """
+    db_conn = mysql.connector.connect(**DB_CONFIG)
+    db_cursor = db_conn.cursor(dictionary=True)
+    db = (db_conn, db_cursor)
+    summary = {"total": 0, "analyzed": 0, "no_comments": 0, "skipped": 0, "errors": []}
 
-        print(
-            f"\nProcessing: {game_name} | "
-            f"game_id={game_id} | "
-            f"Steam AppID={steam_app_id}"
-        )
+    def report(done, total, name, message):
+        print(message)
+        if on_progress:
+            try:
+                on_progress(done, total, name, message)
+            except Exception:
+                pass
 
-        steam_comments = fetch_steam_reviews(
-            steam_app_id,
-            MAX_REVIEWS_PER_GAME
-        )
+    try:
+        db_cursor.execute("SELECT game_name FROM games")
+        catalog = [row['game_name'] for row in db_cursor.fetchall() if row['game_name']]
 
-        try:
-            youtube_comments = fetch_youtube_comments(
-                game_name, catalog, clean_comment, is_valid_comment,
-                refresh=args.refresh_youtube
-            )
-        except YouTubeError as error:
-            print(f"Skipping game {game_id}: {error}. Existing database results preserved.")
-            continue
-        comments = merge_unique(steam_comments + youtube_comments, clean_comment, is_valid_comment)
-        print(f"Steam={len(steam_comments)}, YouTube={len(youtube_comments)}, merged unique={len(comments)}")
+        games = select_games(db_cursor, mode, game_id)
+        total = len(games)
+        summary["total"] = total
+        report(0, total, None, f"Found {total} games to process.")
 
-        if len(comments) == 0:
-            print(
-                "No comments found. "
-                "Saving as New / No analysis."
-            )
+        for i, game in enumerate(games):
+            if should_stop and should_stop():
+                report(i, total, None, "Stopped by the admin.")
+                summary["stopped"] = True
+                break
 
-            if not args.dry_run:
-                save_no_comments_result(game_id)
-            continue
+            gid = game["game_id"]
+            steam_app_id = game["api_game_id"]
+            game_name = game["game_name"]
+            report(i, total, game_name, f"Processing: {game_name} | game_id={gid} | Steam AppID={steam_app_id}")
 
-        print(
-            f"Fetched {len(comments)} comments. "
-            "Analyzing..."
-        )
+            try:
+                steam_comments = fetch_steam_reviews(steam_app_id, MAX_REVIEWS_PER_GAME) if steam_app_id else []
 
-        scores, overall, level = analyze_comments(
-            comments
-        )
+                try:
+                    youtube_comments = fetch_youtube_comments(
+                        game_name, catalog, clean_comment, is_valid_comment,
+                        refresh=refresh_youtube
+                    )
+                except YouTubeError as error:
+                    summary["skipped"] += 1
+                    summary["errors"].append(f"{game_name}: {error}")
+                    report(i + 1, total, game_name, f"Skipping game {gid}: {error}. Existing results kept.")
+                    continue
 
-        if args.dry_run:
-            print(f"DRY RUN: comments={len(comments)}, counts={scores}, overall={overall}, level={level}; database unchanged")
-            continue
+                comments = merge_unique(steam_comments + youtube_comments, clean_comment, is_valid_comment)
+                extra_counts, extra_n = site_extras(db_cursor, gid)
 
-        save_analyzed_result(
-            game_id=game_id,
-            scores=scores,
-            overall=overall,
-            level=level,
-            comments_count=len(comments)
-        )
+                if not comments and extra_n == 0:
+                    if not dry_run:
+                        save_no_comments_result(gid, db)
+                    summary["no_comments"] += 1
+                    report(i + 1, total, game_name, f"{game_name}: no comments found.")
+                    continue
 
-        print(
-            f"Saved result: "
-            f"overall={overall}, level={level}"
-        )
+                scores = {k: 0 for k in extra_counts}
+                if comments:
+                    scores, _, _ = analyze_comments(comments)
 
-    print("\nDone.")
+                # add back what players shared on Dir'a (comments + resolved complaints)
+                all_counts = {k: int(scores[k]) + int(extra_counts[k]) for k in extra_counts}
+                all_total = len(comments) + extra_n
+                overall, level = calculate_overall_from_counts(all_counts, all_total)
+
+                if not dry_run:
+                    save_analyzed_result(gid, all_counts, overall, level, all_total, db)
+                summary["analyzed"] += 1
+                report(i + 1, total, game_name,
+                       f"{game_name}: {len(comments)} Steam/YouTube + {extra_n} from Dir'a, overall={overall}, level={level}")
+
+            except Exception as error:  # keep going with the next game
+                summary["errors"].append(f"{game_name}: {error}")
+                report(i + 1, total, game_name, f"Error on {game_name}: {error}")
+
+        return summary
+    finally:
+        db_cursor.close()
+        db_conn.close()
+
+
+# =========================
+# COMMAND LINE
+# =========================
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--game-id', type=int, help='Process one game, including previously analyzed games')
+    parser.add_argument('--dry-run', action='store_true', help='Fetch and classify without database writes')
+    parser.add_argument('--refresh-youtube', action='store_true', help="Ignore this month's cache")
+    parser.add_argument('--only-new', action='store_true', help='Process only games that have not been analyzed yet')
+    args = parser.parse_args()
+
+    run_mode = "one" if args.game_id else ("new" if args.only_new else "all")
+    result = process_games(run_mode, args.game_id, args.refresh_youtube, args.dry_run)
+    print("\nDone.", result)
 
     cursor.close()
     conn.close()

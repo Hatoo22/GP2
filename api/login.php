@@ -15,6 +15,65 @@ if ($email === '' || $password === '') {
     exit;
 }
 
+/* ---------- too many wrong attempts: pause for a few minutes ---------- */
+// After 5 wrong passwords for the same email within 5 minutes, logging in to that
+// email is paused until 5 minutes after the last wrong try. Forgot password still works.
+const DIRA_MAX_ATTEMPTS = 5;
+const DIRA_LOCK_MINUTES = 5;
+
+$conn->query("
+    CREATE TABLE IF NOT EXISTS login_attempts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(150) NOT NULL,
+        ip VARCHAR(45) NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_email_time (email, created_at)
+    )
+");
+$attemptEmail = strtolower($email);
+$ip = substr($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
+
+$lockCheck = $conn->prepare("
+    SELECT COUNT(*) AS n,
+           GREATEST(0, TIMESTAMPDIFF(SECOND, NOW(), MAX(created_at) + INTERVAL " . DIRA_LOCK_MINUTES . " MINUTE)) AS wait_s
+    FROM login_attempts
+    WHERE email = ? AND created_at > NOW() - INTERVAL " . DIRA_LOCK_MINUTES . " MINUTE
+");
+$lockCheck->bind_param('s', $attemptEmail);
+$lockCheck->execute();
+$lock = $lockCheck->get_result()->fetch_assoc();
+$lockCheck->close();
+
+if ((int)$lock['n'] >= DIRA_MAX_ATTEMPTS) {
+    $mins = max(1, (int)ceil(((int)$lock['wait_s']) / 60));
+    http_response_code(429);
+    echo json_encode([
+        'success' => false,
+        'locked'  => true,
+        'message' => "Too many wrong attempts. Try again in $mins minute" . ($mins === 1 ? '' : 's') . ", or use Forgot password."
+    ]);
+    exit;
+}
+
+function dira_login_failed($conn, $attemptEmail, $ip, $remainingBefore) {
+    $st = $conn->prepare("INSERT INTO login_attempts (email, ip) VALUES (?, ?)");
+    $st->bind_param('ss', $attemptEmail, $ip);
+    $st->execute();
+    $st->close();
+    // tidy up old rows now and then
+    if (mt_rand(1, 50) === 1) $conn->query("DELETE FROM login_attempts WHERE created_at < NOW() - INTERVAL 1 DAY");
+
+    $left = $remainingBefore - 1;
+    $msg = 'Incorrect email or password.';
+    if ($left <= 0) $msg = 'Too many wrong attempts. Try again in ' . DIRA_LOCK_MINUTES . ' minutes, or use Forgot password.';
+    elseif ($left <= 2) $msg .= " $left attempt" . ($left === 1 ? '' : 's') . ' left before logging in is paused for a few minutes.';
+
+    http_response_code($left <= 0 ? 429 : 401);
+    echo json_encode(['success' => false, 'locked' => $left <= 0, 'message' => $msg]);
+    exit;
+}
+$remaining = DIRA_MAX_ATTEMPTS - (int)$lock['n'];
+
 // Get the columns of the users table
 $columns = get_columns($conn, 'users');
 
@@ -33,23 +92,38 @@ $stmt->bind_param('s', $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Return an error if the email does not exist
+// Return an error if the email does not exist (counts as a wrong attempt too)
 if (!$result || $result->num_rows === 0) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Incorrect email or password.']);
-    exit;
+    dira_login_failed($conn, $attemptEmail, $ip, $remaining);
 }
 
 $user = $result->fetch_assoc();
 
-$storedPassword = $user[$passCol] ?? '';
-$passwordIsCorrect = password_verify($password, $storedPassword) || hash_equals($storedPassword, $password);
+$storedPassword = (string)($user[$passCol] ?? '');
+$isHashed = !empty(password_get_info($storedPassword)['algo']);
+$passwordIsCorrect = $isHashed
+    ? password_verify($password, $storedPassword)
+    : ($storedPassword !== '' && hash_equals($storedPassword, $password)); // old accounts saved as plain text
 
 // Return an error if the password is incorrect
 if (!$passwordIsCorrect) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Incorrect email or password.']);
-    exit;
+    dira_login_failed($conn, $attemptEmail, $ip, $remaining);
+}
+
+// correct password: clear the wrong attempts for this email
+$clear = $conn->prepare("DELETE FROM login_attempts WHERE email = ?");
+$clear->bind_param('s', $attemptEmail);
+$clear->execute();
+$clear->close();
+
+// passwords still saved as plain text (or with an old method) are encrypted now
+if (!$isHashed || password_needs_rehash($storedPassword, PASSWORD_DEFAULT)) {
+    $newHash = password_hash($password, PASSWORD_DEFAULT);
+    $up = $conn->prepare("UPDATE `users` SET `$passCol` = ? WHERE `$idCol` = ? LIMIT 1");
+    $uid = $user[$idCol];
+    $up->bind_param('si', $newHash, $uid);
+    $up->execute();
+    $up->close();
 }
 
 $status = $statusCol ? strtolower($user[$statusCol] ?? 'active') : 'active';
