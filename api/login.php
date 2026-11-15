@@ -55,6 +55,15 @@ if (!$passwordIsCorrect) {
 $status = $statusCol ? strtolower($user[$statusCol] ?? 'active') : 'active';
 $role = $roleCol ? strtolower($user[$roleCol] ?? 'individual') : 'individual';
 
+if ($status === 'invited') {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Please finish setting up your account using the link in your invitation email.'
+    ]);
+    exit;
+}
+
 if ($status === 'pending') {
     http_response_code(403);
     echo json_encode([

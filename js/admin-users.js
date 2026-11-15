@@ -1,148 +1,47 @@
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+/* =========================================================
+   ADMIN — USERS MANAGEMENT
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
 
-    const tableBody =
-      document.getElementById(
-        "adminUsersTable"
-      );
+  const tableBody = $("adminUsersTable");
+  const tabs = document.querySelectorAll(".admin-user-tab");
+  const searchInput = $("adminUserSearch");
+  const statusChips = $("statusChips");
+  const pager = $("auPages");
+  const showing = $("auShowing");
+  const pendingNotice = $("pendingNotice");
 
-    const tabs =
-      document.querySelectorAll(
-        ".admin-user-tab"
-      );
+  const addAdminBtn = $("addAdminBtn");
+  const addAdminModal = $("addAdminModal");
+  const newAdminEmail = $("newAdminEmail");
+  const cancelAddAdmin = $("cancelAddAdmin");
+  const sendAdminInvite = $("sendAdminInvite");
+  const addAdminMessage = $("addAdminMessage");
 
-    const searchInput =
-      document.getElementById(
-        "adminUserSearch"
-      );
+  /* Modal */
+  const accountStatusModal = $("accountStatusModal");
+  const accountStatusTitle = $("accountStatusTitle");
+  const accountStatusAction = $("accountStatusAction");
+  const accountStatusUserName = $("accountStatusUserName");
+  const accountStatusDescription = $("accountStatusDescription");
+  const cancelAccountStatus = $("cancelAccountStatus");
+  const confirmAccountStatus = $("confirmAccountStatus");
+  const disableAccountFields = $("disableAccountFields");
+  const disableReason = $("disableReason");
+  const otherDisableReasonField = $("otherDisableReasonField");
+  const otherDisableReason = $("otherDisableReason");
+  const disableDuration = $("disableDuration");
+  const disableAccountMessage = $("disableAccountMessage");
 
-    const statusFilter =
-      document.getElementById(
-        "adminUserStatusFilter"
-      );
+  const PAGE_SIZE = 12;
+  const nf = new Intl.NumberFormat("en-US");
 
-    const sectionTitle =
-      document.getElementById(
-        "adminUsersSectionTitle"
-      );
-
-    const sectionDescription =
-      document.getElementById(
-        "adminUsersSectionDescription"
-      );
-
-    const usersCount =
-      document.getElementById(
-        "adminUsersCount"
-      );
-
-  const addAdminBtn =
-      document.getElementById(
-         "addAdminBtn"
-  );
-
-  const addAdminModal =
-  document.getElementById(
-    "addAdminModal"
-  );
-
-const newAdminEmail =
-  document.getElementById(
-    "newAdminEmail"
-  );
-
-const cancelAddAdmin =
-  document.getElementById(
-    "cancelAddAdmin"
-  );
-
-const sendAdminInvite =
-  document.getElementById(
-    "sendAdminInvite"
-  );
-
-const addAdminMessage =
-  document.getElementById(
-    "addAdminMessage"
-  );
-
-
-    /* Modal */
-
-    const accountStatusModal =
-      document.getElementById(
-        "accountStatusModal"
-      );
-
-    const accountStatusTitle =
-      document.getElementById(
-        "accountStatusTitle"
-      );
-
-    const accountStatusAction =
-      document.getElementById(
-        "accountStatusAction"
-      );
-
-    const accountStatusUserName =
-      document.getElementById(
-        "accountStatusUserName"
-      );
-
-    const accountStatusDescription =
-      document.getElementById(
-        "accountStatusDescription"
-      );
-
-    const cancelAccountStatus =
-      document.getElementById(
-        "cancelAccountStatus"
-      );
-
-    const confirmAccountStatus =
-      document.getElementById(
-        "confirmAccountStatus"
-      );
-
-    const disableAccountFields =
-  document.getElementById(
-    "disableAccountFields"
-  );
-
-const disableReason =
-  document.getElementById(
-    "disableReason"
-  );
-
-const otherDisableReasonField =
-  document.getElementById(
-    "otherDisableReasonField"
-  );
-
-const otherDisableReason =
-  document.getElementById(
-    "otherDisableReason"
-  );
-
-const disableDuration =
-  document.getElementById(
-    "disableDuration"
-  );
-
-const disableAccountMessage =
-  document.getElementById(
-    "disableAccountMessage"
-  );
-
-
-    let currentRole =
-      "individual";
-
-    let users = [];
-
-    let selectedUser =
-      null;
+  let currentRole = "individual";
+  let currentStatus = "all";
+  let users = [];
+  let page = 1;
+  let selectedUser = null;
 
 addAdminBtn.addEventListener(
   "click",
@@ -214,530 +113,275 @@ sendAdminInvite.addEventListener(
     }
 
 
-    addAdminMessage.textContent =
-      "Invitation sending will be available after email setup.";
+    sendAdminInvite.disabled = true;
+    addAdminMessage.style.color = "";
+    addAdminMessage.textContent = "Sending invitation…";
+
+    fetch("api/admin-invite.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    })
+      .then((res) => res.json().catch(() => ({})))
+      .then((data) => {
+        addAdminMessage.textContent = data.message || "Couldn't send the invitation.";
+        addAdminMessage.style.color = data.success ? "#16a34a" : "#dc2626";
+        if (data.success || data.user_id) {
+          newAdminEmail.value = "";
+          loadUsers(currentRole);
+        }
+        if (data.success) {
+          setTimeout(() => addAdminModal.classList.remove("show"), 1600);
+        }
+      })
+      .catch(() => {
+        addAdminMessage.textContent = "Couldn't connect. Try again.";
+        addAdminMessage.style.color = "#dc2626";
+      })
+      .finally(() => { sendAdminInvite.disabled = false; });
   }
 );
 
-    /* =========================================
-       ESCAPE HTML
-    ========================================= */
 
-    function escapeHtml(value) {
-
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-
-    /* =========================================
-       SEARCH NORMALIZATION
-    ========================================= */
-
-    function normalizeText(value) {
-
-      return String(value ?? "")
-        .toLowerCase()
-        .trim();
-    }
-
-
-
-    /* =========================================
-       DATE
-    ========================================= */
-
-    function formatDate(value) {
-
-      if (!value) {
-        return "—";
-      }
-
-
-      const date =
-        new Date(
-          String(value)
-            .replace(" ", "T")
-        );
-
-
-      if (isNaN(date)) {
-        return value;
-      }
-
-
-      return date.toLocaleDateString(
-        "en-GB",
-        {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }
-      );
-    }
-
-
-
-    /* =========================================
-       STATUS BADGE
-    ========================================= */
-
-    function getStatusBadge(status) {
-
-      const safeStatus =
-        String(
-          status || "active"
-        ).toLowerCase();
-
-
-      return `
-        <span
-          class="admin-user-status ${escapeHtml(
-            safeStatus
-          )}"
-        >
-          ${escapeHtml(
-            safeStatus
-          )}
-        </span>
-      `;
-    }
-
-
-
-    /* =========================================
-       ACTION BUTTON
-    ========================================= */
-
-    function getActionButton(user) {
-
-  const status =
-    String(
-      user.status || "active"
-    ).toLowerCase();
-
-  const isMainAdmin =
-    user.role === "admin" &&
-    Number(user.is_main_admin) === 1;
-
-
-  if (isMainAdmin) {
-
-    return `
-      <span class="pill">
-        Main Admin
-      </span>
-    `;
+  /* =========================================
+     HELPERS
+  ========================================= */
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
+  const norm = (v) => String(v ?? "").toLowerCase().trim();
+  const plural = (n, one, many) => `${nf.format(n)} ${n === 1 ? one : many}`;
+  const statusOf = (u) => norm(u.status || "active");
 
-  if (status === "active") {
-
-    return `
-      <button
-        class="admin-action-btn
-               admin-account-action
-               disable"
-        type="button"
-        data-user-id="${escapeHtml(
-          user.user_id
-        )}"
-      >
-        Disable
-      </button>
-    `;
+  function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(String(value).replace(" ", "T"));
+    if (isNaN(date)) return value;
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   }
 
+  function initials(name) {
+    const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] || "?") + (parts[1]?.[0] || "")).toUpperCase();
+  }
 
-  return `
-    <button
-      class="admin-action-btn
-             admin-account-action
-             enable"
-      type="button"
-      data-user-id="${escapeHtml(
-        user.user_id
-      )}"
-    >
-      ${
-        status === "pending"
-          ? "Activate"
-          : "Enable"
-      }
-    </button>
-  `;
-}
+  // stable soft colour per user
+  function avatarHue(seed) {
+    let h = 0;
+    for (const ch of String(seed)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+    return h;
+  }
 
+  const STATUS_LABEL = { active: "Active", pending: "Pending approval", disabled: "Disabled", invited: "Invited" };
 
+  /* =========================================
+     ROW
+  ========================================= */
+  function actionHtml(user) {
+    const status = statusOf(user);
+    const isMainAdmin = user.role === "admin" && Number(user.is_main_admin) === 1;
+    const id = escapeHtml(user.user_id);
 
-    /* =========================================
-       SECTION HEADER
-    ========================================= */
+    if (isMainAdmin) return `<span class="au-main">★ Main Admin</span>`;
 
-    function updateSectionHeader() {
-
-      if (
-        currentRole === "individual"
-      ) {
-
-        sectionTitle.textContent =
-          "Individual Users";
-
-        sectionDescription.textContent =
-          "Registered individual users on the DIR'A platform.";
-
-      } else if (
-        currentRole === "employee"
-      ) {
-
-        sectionTitle.textContent =
-          "Government Employees";
-
-        sectionDescription.textContent =
-          "Government employee accounts with access to DIR'A.";
-
-      } else {
-
-        sectionTitle.textContent =
-          "Administrators";
-
-        sectionDescription.textContent =
-          "Administrator accounts authorized to manage the platform.";
-      }
+    if (status === "invited") {
+      return `<button class="au-btn au-resend" type="button" data-user-id="${id}">Resend invite</button>`;
     }
 
+    if (status === "active") {
+      return `<button class="au-btn au-btn--danger admin-account-action" type="button" data-user-id="${id}">Disable</button>`;
+    }
+    if (status === "pending") {
+      return `<button class="au-btn au-btn--approve admin-account-action" type="button" data-user-id="${id}">✓ Approve</button>`;
+    }
+    return `<button class="au-btn admin-account-action" type="button" data-user-id="${id}">Enable</button>`;
+  }
 
-
-    /* =========================================
-       RENDER USERS
-    ========================================= */
-
-    function renderUsers(list) {
-
-      tableBody.innerHTML =
-        "";
-
-
-      usersCount.textContent =
-        `${list.length} ${
-          list.length === 1
-            ? "User"
-            : "Users"
-        }`;
-
-
-      if (!list.length) {
-
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="5">
-              No users found.
-            </td>
-          </tr>
-        `;
-
-        return;
-      }
-
-
-      list.forEach(user => {
-
-        const row =
-          document.createElement(
-            "tr"
-          );
-
-
-        row.innerHTML = `
-
-          <td>
-
-            <div class="admin-user-info">
-
-              <div class="admin-user-avatar">
-                👤
-              </div>
-
-
-              <div>
-
-                <strong>
-                  ${escapeHtml(
-                    user.name
-                  )}
-                </strong>
-
-                <small>
-                  ID:
-                  ${escapeHtml(
-                    user.user_id
-                  )}
-                </small>
-
-              </div>
-
+  function rowHtml(user) {
+    const status = statusOf(user);
+    const hue = avatarHue(user.email || user.user_id);
+    return `
+      <tr>
+        <td>
+          <div class="au-user">
+            <span class="au-avatar" style="--h:${hue}">${escapeHtml(initials(user.name))}</span>
+            <div class="au-user-text">
+              <strong>${escapeHtml(user.name || "Unnamed user")}</strong>
+              <span>${escapeHtml(user.email)}</span>
+              ${Number(user.spam_count || 0) > 0
+                ? `<span class="au-spam" title="${user.spam_count} of ${user.report_count} reports were marked as spam">⚑ ${plural(Number(user.spam_count), "spam report", "spam reports")} of ${nf.format(Number(user.report_count || 0))}</span>`
+                : ""}
             </div>
-
-          </td>
-
-
-          <td>
-            ${escapeHtml(
-              user.email
-            )}
-          </td>
-
-
-          <td>
-            ${getStatusBadge(
-              user.status
-            )}
-          </td>
-
-
-          <td>
-            ${formatDate(
-              user.created_at
-            )}
-          </td>
-
-
-          <td>
-
-            <div class="admin-table-actions">
-
-              ${getActionButton(
-                user
-              )}
-
-            </div>
-
-          </td>
-
-        `;
-
-
-        tableBody.appendChild(
-          row
-        );
-      });
-    }
-
-
-
-    /* =========================================
-       FILTER
-    ========================================= */
-
-    function applyFilters() {
-
-      const searchValue =
-        normalizeText(
-          searchInput.value
-        );
-
-
-      const selectedStatus =
-        statusFilter.value
-          .toLowerCase();
-
-
-      const filteredUsers =
-        users.filter(user => {
-
-          const name =
-            normalizeText(
-              user.name
-            );
-
-          const email =
-            normalizeText(
-              user.email
-            );
-
-          const status =
-            normalizeText(
-              user.status ||
-              "active"
-            );
-
-
-          const matchesSearch =
-            name.includes(
-              searchValue
-            ) ||
-            email.includes(
-              searchValue
-            );
-
-
-          const matchesStatus =
-            selectedStatus === "all" ||
-            status === selectedStatus;
-
-
-          return (
-            matchesSearch &&
-            matchesStatus
-          );
-
-        });
-
-
-      renderUsers(
-        filteredUsers
-      );
-    }
-
-
-
-    /* =========================================
-       LOAD USERS
-    ========================================= */
-
-    async function loadUsers(role) {
-
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="5">
-            Loading users...
-          </td>
-        </tr>
-      `;
-
-
-      usersCount.textContent =
-        "Loading...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            `api/admin-users.php?role=${encodeURIComponent(
-              role
-            )}`
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (!data.success) {
-
-          throw new Error(
-            data.message ||
-            "Unable to load users."
-          );
-        }
-
-
-        users =
-          data.users || [];
-
-
-        applyFilters();
-
-
-      } catch (error) {
-
-        console.error(error);
-
-
-        users = [];
-
-
-        usersCount.textContent =
-          "0 Users";
-
-
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="5">
-              Unable to load users.
-            </td>
-          </tr>
-        `;
-      }
-    }
-
-
-
-    /* =========================================
-       TABS
-    ========================================= */
-
-    tabs.forEach(tab => {
-
-      tab.addEventListener(
-        "click",
-        () => {
-
-          tabs.forEach(
-            currentTab => {
-
-              currentTab.classList.remove(
-                "active"
-              );
-            }
-          );
-
-
-          tab.classList.add(
-            "active"
-          );
-
-
-          currentRole =
-            tab.dataset.role;
-
-
-          searchInput.value =
-            "";
-
-
-          statusFilter.value =
-            "all";
-
-
-          updateSectionHeader();
-
-         addAdminBtn.hidden =
-           currentRole !== "admin";
-
-          loadUsers(
-            currentRole
-          );
-
-        }
-      );
-
+          </div>
+        </td>
+        <td><span class="au-pill au-pill--${escapeHtml(status)}"><i></i>${escapeHtml(STATUS_LABEL[status] || status)}</span></td>
+        <td class="ag-muted">${formatDate(user.created_at)}</td>
+        <td class="ag-right">${actionHtml(user)}</td>
+      </tr>`;
+  }
+
+  /* =========================================
+     FILTER + RENDER
+  ========================================= */
+  function getList() {
+    const q = norm(searchInput.value);
+    return users.filter((u) => {
+      const matchesSearch = !q || norm(u.name).includes(q) || norm(u.email).includes(q);
+      const matchesStatus =
+        currentStatus === "all" ||
+        (currentStatus === "spam" ? Number(u.spam_count || 0) > 0 : statusOf(u) === currentStatus);
+      return matchesSearch && matchesStatus;
     });
+  }
 
+  function updateStatusCounts() {
+    const c = { all: users.length, active: 0, pending: 0, disabled: 0 };
+    users.forEach((u) => { const s = statusOf(u); if (s in c) c[s]++; });
+    $("stAll").textContent = nf.format(c.all);
+    $("stActive").textContent = nf.format(c.active);
+    $("stPending").textContent = nf.format(c.pending);
+    $("stDisabled").textContent = nf.format(c.disabled);
 
+    // "Sent spam" filter only makes sense for individual users
+    const spammers = users.filter((u) => Number(u.spam_count || 0) > 0).length;
+    $("stSpam").textContent = nf.format(spammers);
+    $("spamChip").hidden = currentRole !== "individual" || spammers === 0;
+    if ($("spamChip").hidden && currentStatus === "spam") currentStatus = "all";
 
-    /* =========================================
-       SEARCH EVENTS
-    ========================================= */
+    // the pending notice only matters for employees
+    if (currentRole === "employee" && c.pending > 0) {
+      pendingNotice.hidden = false;
+      $("pendingNoticeText").textContent =
+        `${c.pending} ${c.pending === 1 ? "account is" : "accounts are"} waiting for your approval`;
+    } else {
+      pendingNotice.hidden = true;
+    }
+  }
 
-    searchInput.addEventListener(
-      "input",
-      applyFilters
-    );
+  function applyFilters() {
+    updateStatusCounts();
 
+    const list = getList();
+    const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    page = Math.min(page, pages);
+    const start = (page - 1) * PAGE_SIZE;
+    const slice = list.slice(start, start + PAGE_SIZE);
 
-    statusFilter.addEventListener(
-      "change",
-      applyFilters
-    );
+    tableBody.innerHTML = slice.length
+      ? slice.map(rowHtml).join("")
+      : `<tr><td colspan="4" class="ad-empty">No users found.</td></tr>`;
 
+    showing.textContent = list.length
+      ? `Showing ${start + 1}–${start + slice.length} of ${nf.format(list.length)} users`
+      : "";
 
+    const nums = new Set([1, pages, page - 1, page, page + 1]);
+    const visible = [...nums].filter((n) => n >= 1 && n <= pages).sort((a, b) => a - b);
+    let html = `<button type="button" data-page="${page - 1}" ${page === 1 ? "disabled" : ""} aria-label="Previous page">‹</button>`;
+    visible.forEach((n, i) => {
+      if (i && n - visible[i - 1] > 1) html += `<span class="ag-gap">…</span>`;
+      html += `<button type="button" data-page="${n}" class="${n === page ? "is-active" : ""}">${n}</button>`;
+    });
+    html += `<button type="button" data-page="${page + 1}" ${page === pages ? "disabled" : ""} aria-label="Next page">›</button>`;
+    pager.innerHTML = pages > 1 ? html : "";
+  }
+
+  function setStatus(status) {
+    currentStatus = status;
+    statusChips.querySelectorAll("button").forEach((b) =>
+      b.classList.toggle("is-active", b.dataset.status === status));
+    page = 1;
+    applyFilters();
+  }
+
+  /* counts on the role tabs */
+  async function refreshCounts() {
+    const roles = { individual: "cntIndividual", employee: "cntEmployee", admin: "cntAdmin" };
+    await Promise.all(Object.entries(roles).map(async ([role, id]) => {
+      try {
+        const r = await fetch(`api/admin-users.php?role=${role}`);
+        const d = await r.json();
+        if (d.success) $(id).textContent = nf.format(d.count ?? (d.users || []).length);
+      } catch { /* keep previous value */ }
+    }));
+  }
+
+  /* =========================================
+     LOAD
+  ========================================= */
+  async function loadUsers(role) {
+    tableBody.innerHTML = `<tr><td colspan="4" class="ad-empty">Loading users…</td></tr>`;
+    showing.textContent = "";
+    pager.innerHTML = "";
+    try {
+      const response = await fetch(`api/admin-users.php?role=${encodeURIComponent(role)}`);
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || "Unable to load users.");
+      users = data.users || [];
+      page = 1;
+      applyFilters();
+    } catch (error) {
+      console.error(error);
+      users = [];
+      updateStatusCounts();
+      tableBody.innerHTML = `<tr><td colspan="4" class="ad-empty">Unable to load users.</td></tr>`;
+    }
+  }
+
+  /* =========================================
+     EVENTS
+  ========================================= */
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
+      currentRole = tab.dataset.role;
+      searchInput.value = "";
+      currentStatus = "all";
+      statusChips.querySelectorAll("button").forEach((b) =>
+        b.classList.toggle("is-active", b.dataset.status === "all"));
+      addAdminBtn.hidden = currentRole !== "admin";
+      loadUsers(currentRole);
+    });
+  });
+
+  statusChips.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-status]");
+    if (b) setStatus(b.dataset.status);
+  });
+
+  $("showPendingBtn").addEventListener("click", () => setStatus("pending"));
+
+  searchInput.addEventListener("input", () => { page = 1; applyFilters(); });
+
+  pager.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-page]");
+    if (!btn || btn.disabled) return;
+    page = Number(btn.dataset.page);
+    applyFilters();
+    document.querySelector(".ag-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+    /* resend an admin invitation */
+    tableBody.addEventListener("click", (event) => {
+      const btn = event.target.closest(".au-resend");
+      if (!btn) return;
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      fetch("api/admin-invite.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: Number(btn.dataset.userId), resend: true })
+      })
+        .then((res) => res.json().catch(() => ({})))
+        .then((data) => { btn.textContent = data.success ? "Sent ✓" : "Failed — retry"; if (!data.success) btn.disabled = false; btn.title = data.message || ""; })
+        .catch(() => { btn.textContent = "Failed — retry"; btn.disabled = false; });
+    });
 
     /* =========================================
        OPEN ACCOUNT ACTION MODAL
@@ -1136,6 +780,7 @@ disableAccountMessage.textContent = "";
 
 
           applyFilters();
+          refreshCounts();
 
 
 
@@ -1174,15 +819,25 @@ disableAccountMessage.textContent = "";
 
 
 
-    /* =========================================
-       INITIAL PAGE
-    ========================================= */
-
-    updateSectionHeader();
-
-    loadUsers(
-      currentRole
-    );
-
+  /* =========================================
+     INITIAL PAGE
+  ========================================= */
+  // open straight on a role from a link, e.g. admin-users.html?role=employee&status=pending
+  const params = new URLSearchParams(location.search);
+  const startRole = params.get("role");
+  const startTab = [...tabs].find((t) => t.dataset.role === startRole);
+  if (startTab) {
+    tabs.forEach((t) => t.classList.toggle("is-active", t === startTab));
+    currentRole = startRole;
+    addAdminBtn.hidden = currentRole !== "admin";
   }
-);
+  const startStatus = params.get("status");
+  if (["active", "pending", "disabled"].includes(startStatus)) {
+    currentStatus = startStatus;
+    statusChips.querySelectorAll("button").forEach((b) =>
+      b.classList.toggle("is-active", b.dataset.status === startStatus));
+  }
+
+  refreshCounts();
+  loadUsers(currentRole);
+});

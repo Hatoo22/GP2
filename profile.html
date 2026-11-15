@@ -5,22 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Profile</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 
-<body>
+<body class="fullPage">
   <main class="page">
 
     <!-- Navbar -->
     <nav class="nav">
-      <a href="main-home.html" class="logo logo-switch">
+      <a href="main-home.html" class="logo logo-switch" id="profileLogoLink">
   <img src="images/black-logo.png" class="logo-light">
   <img src="images/white-logo.png" class="logo-dark">
 </a>
-      <div class="links">
+      <div class="links" id="profileNavLinks">
         <a href="home.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="my-reports.html">Reports</a>
+        <a href="my-reports.html">Complaints</a>
         <a href="tracked-games.html">My List</a>
         <a class="btn" href="main-home.html">Log Out</a>
         <button onclick="toggleTheme()" class="icon">🌙</button>
@@ -41,6 +41,7 @@
 </div>
 
         <h2 style="text-align:center">Profile Info</h2>
+        <p class="profileRole" id="profileRole" hidden></p>
 
         <!-- Names -->
         <div class="row">
@@ -58,14 +59,14 @@
         <!-- Email -->
         <div class="field">
           <label>Email</label>
-          <input id="email" name="email" type="email" placeholder="Email" readonly>
+          <input id="email" name="email" type="email" placeholder="Email" readonly tabindex="-1" aria-readonly="true">
         </div>
 
 
         <!-- Joining date -->
         <div class="field">
           <label>Joining date</label>
-          <input id="joinDate" type="text" readonly>
+          <input id="joinDate" type="text" readonly tabindex="-1" aria-readonly="true">
         </div>
 
         <!-- Save button -->
@@ -73,6 +74,15 @@
 
         <!-- Message -->
         <p id="profileMessage" class="mini"></p>
+
+        <!-- Danger zone (individual accounts only) -->
+        <div class="dangerZone" id="dangerZone" hidden>
+          <div>
+            <strong>Delete account</strong>
+            <p class="mini">Permanently remove your personal information from DIR'A.</p>
+          </div>
+          <button class="dangerBtn" id="openDeleteAccount" type="button">Delete account</button>
+        </div>
 
       </div>
     </section>
@@ -113,10 +123,31 @@
 </div>
 
 
+<div id="deleteAccountModal" class="confirmModal">
+  <div class="confirmBox deleteAccountBox" role="dialog" aria-labelledby="deleteAccountTitle">
+    <h2 id="deleteAccountTitle">Delete your account?</h2>
+    <p class="mini">This can't be undone. Here is what happens:</p>
+    <ul class="deleteList">
+      <li><span class="delX">✕</span> Your name, email, password and avatar are deleted</li>
+      <li><span class="delX">✕</span> Your saved games list (My List) is deleted</li>
+      <li><span class="delKeep">•</span> Reports and comments you submitted stay on the platform without your name, because they are part of game safety reviews</li>
+    </ul>
+    <div class="field">
+      <label for="deletePassword">Enter your password to confirm</label>
+      <input id="deletePassword" type="password" autocomplete="current-password" placeholder="Your password">
+    </div>
+    <p class="mini deleteMsg" id="deleteAccountMsg"></p>
+    <div class="confirmActions">
+      <button class="ghostBtn" id="cancelDeleteAccount" type="button">Cancel</button>
+      <button class="dangerBtn dangerBtn--solid" id="confirmDeleteAccount" type="button">Delete my account</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
   <script src="js/common.js"></script>
-  <script src="js/profile.js"></script>
+  <script src="js/profile.js?v=3"></script>
 
 </body>
 

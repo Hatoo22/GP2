@@ -1772,3 +1772,455 @@ body.authPage
   transform: translateY(4px) !important;
 }
 
+
+
+/* =========================================================
+   THEME — the guardian follows light / dark mode everywhere
+   light = cyan accent, dark = orange accent
+   ========================================================= */
+body {
+  --guardian-accent: #32c5d2;
+  --guardian-glow: rgba(50, 197, 210, 0.55);
+  --guardian-auth-accent: #32c5d2;
+  --guardian-auth-glow: rgba(50, 197, 210, 0.55);
+}
+
+body.dark-mode {
+  --guardian-accent: #ff9d3d;
+  --guardian-glow: rgba(255, 157, 61, 0.55);
+  --guardian-auth-accent: #ff9d3d;
+  --guardian-auth-glow: rgba(255, 157, 61, 0.55);
+}
+
+.dir-guardian .guardian-eye {
+  background: var(--guardian-accent);
+  box-shadow:
+    0 0 6px var(--guardian-glow),
+    0 0 14px var(--guardian-glow);
+}
+
+.dir-guardian .guardian-ear::after {
+  border-color: var(--guardian-accent);
+  box-shadow: 0 0 5px var(--guardian-glow);
+}
+
+.dir-guardian .guardian-symbol,
+.dir-guardian.guardian-medium .guardian-symbol {
+  color: var(--guardian-accent);
+  text-shadow: 0 0 10px var(--guardian-glow);
+}
+
+/* keep the red alarm colours for high-risk reactions */
+.dir-guardian.guardian-high .guardian-eye,
+.dir-guardian.guardian-high-peek .guardian-eye {
+  background: #ff3b30;
+  box-shadow: 0 0 6px rgba(255, 59, 48, 0.9), 0 0 14px rgba(255, 59, 48, 0.58);
+}
+.dir-guardian.guardian-high .guardian-symbol {
+  color: #ff3b30;
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.6);
+}
+
+/* low-risk "happy" eyes are drawn with a border, not a fill */
+.dir-guardian.guardian-low .guardian-eye {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--guardian-accent);
+}
+
+
+
+/* =========================================================
+   ASSISTANT CHAT
+   ========================================================= */
+body:not(.authPage) .dir-guardian .guardian-body-wrap {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+body:not(.authPage) .dir-guardian:focus-visible {
+  outline: none;
+}
+body:not(.authPage) .dir-guardian:focus-visible .guardian-head {
+  box-shadow: 0 0 0 3px var(--guardian-accent);
+}
+
+/* hover: eyes glow a bit stronger (no filters, so the face stays sharp) */
+body:not(.authPage) .dir-guardian .guardian-body-wrap:hover .guardian-eye {
+  box-shadow:
+    0 0 8px var(--guardian-glow),
+    0 0 18px var(--guardian-glow);
+}
+
+.guardianHint {
+  position: fixed;
+  left: 112px;
+  bottom: 128px;
+  z-index: 10000;
+
+  padding: 9px 14px;
+  border-radius: 14px 14px 14px 4px;
+
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid rgba(50, 197, 210, 0.35);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+
+  opacity: 0;
+  transform: translateY(6px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.guardianHint.show {
+  opacity: 1;
+  transform: none;
+}
+
+.guardianChat {
+  --chat-bg: rgba(255, 255, 255, 0.97);
+  --chat-text: #0f172a;
+  --chat-muted: #64748b;
+  --chat-border: rgba(50, 197, 210, 0.28);
+  --chat-bot: #eef8f9;
+  --chat-user-text: #06343a;
+  --chat-chip: rgba(50, 197, 210, 0.10);
+
+  position: fixed;
+  left: 20px;
+  bottom: 182px;
+  z-index: 10001;
+
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 210px));
+
+  display: flex;
+  flex-direction: column;
+
+  color: var(--chat-text);
+  background: var(--chat-bg);
+  border: 1px solid var(--chat-border);
+  border-radius: 22px 22px 22px 6px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.97);
+  transform-origin: left bottom;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+  font-family: inherit;
+}
+
+body.dark-mode .guardianChat {
+  --chat-bg: rgba(22, 20, 18, 0.97);
+  --chat-text: #fff8f0;
+  --chat-muted: #b9a99b;
+  --chat-border: rgba(255, 157, 61, 0.22);
+  --chat-bot: rgba(255, 255, 255, 0.06);
+  --chat-user-text: #1a0f05;
+  --chat-chip: rgba(255, 157, 61, 0.10);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+body.dark-mode .guardianHint {
+  color: #fff8f0;
+  background: #1d1916;
+  border-color: rgba(255, 157, 61, 0.3);
+}
+
+.guardianChat.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.guardianChatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--chat-border);
+}
+
+.guardianChatTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guardianChatTitle strong {
+  display: block;
+  font-size: 14px;
+}
+.guardianChatTitle small {
+  color: var(--chat-muted);
+  font-size: 11px;
+}
+
+.guardianChatDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--guardian-accent);
+  box-shadow: 0 0 8px var(--guardian-glow);
+}
+
+.guardianChatClose {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--chat-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.guardianChatClose:hover {
+  color: var(--chat-text);
+  background: var(--chat-chip);
+}
+
+.guardianChatBody {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guardianMsg {
+  max-width: 85%;
+  padding: 10px 13px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-line;
+  word-wrap: break-word;
+  animation: guardianMsgIn 0.2s ease;
+}
+.guardianMsg--bot {
+  align-self: flex-start;
+  background: var(--chat-bot);
+  border-bottom-left-radius: 4px;
+}
+.guardianMsg--user {
+  align-self: flex-end;
+  color: var(--chat-user-text);
+  background: var(--guardian-accent);
+  border-bottom-right-radius: 4px;
+  font-weight: 400;
+}
+
+@keyframes guardianMsgIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.guardianTyping {
+  display: flex;
+  gap: 4px;
+  padding: 12px 14px;
+}
+.guardianTyping span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chat-muted);
+  animation: guardianDots 0.9s infinite ease-in-out;
+}
+.guardianTyping span:nth-child(2) { animation-delay: 0.15s; }
+.guardianTyping span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes guardianDots {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+.guardianChatOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 14px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+.guardianChatOptions:empty {
+  display: none;
+}
+
+.guardianChip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--chat-border);
+  background: var(--chat-chip);
+  color: var(--chat-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.guardianChip:hover {
+  border-color: var(--guardian-accent);
+  transform: translateY(-1px);
+}
+.guardianChip--ghost {
+  background: transparent;
+  color: var(--chat-muted);
+}
+
+.guardianChatForm {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--chat-border);
+}
+.guardianChatForm[hidden] {
+  display: none;
+}
+.guardianChatForm textarea {
+  flex: 1;
+  resize: none;
+  max-height: 110px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--chat-border);
+  background: transparent;
+  color: var(--chat-text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.guardianChatForm textarea:focus {
+  border-color: var(--guardian-accent);
+}
+.guardianChatSend {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--guardian-accent);
+  color: var(--chat-user-text);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .guardianChat {
+    left: 16px;
+    bottom: 150px;
+    max-height: calc(100vh - 180px);
+  }
+  .guardianHint {
+    left: 96px;
+    bottom: 104px;
+  }
+}
+
+/* one continuous chat: options scroll with the messages */
+.guardianChatBody > .guardianChatOptions {
+  padding: 4px 0 2px;
+  max-height: none;
+  overflow: visible;
+}
+.guardianChatBody {
+  scrollbar-width: thin;
+  scrollbar-color: var(--chat-border) transparent;
+}
+.guardianChatBody::-webkit-scrollbar { width: 6px; }
+.guardianChatBody::-webkit-scrollbar-track { background: transparent; }
+.guardianChatBody::-webkit-scrollbar-thumb {
+  background: var(--chat-border);
+  border-radius: 999px;
+}
+
+/* =========================================================
+   Assistant summary card (employee complaints)
+   ========================================================= */
+.guardianSummary {
+  max-width: 100% !important;
+  width: 100%;
+  white-space: normal !important;
+  padding: 14px 16px !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.guardianSummary p { margin: 0; }
+.guardianSummary .gs-title {
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.guardianSummary .gs-title span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--chat-muted);
+}
+.guardianSummary .gs-risk {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  --c: #94a3b8;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.guardianSummary .gs-risk--low { --c: #16a34a; }
+.guardianSummary .gs-risk--medium { --c: #d97706; }
+.guardianSummary .gs-risk--high { --c: #dc2626; }
+.guardianSummary .gs-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+.guardianSummary .gs-stats div {
+  padding: 8px 6px;
+  border-radius: 10px;
+  text-align: center;
+  background: var(--chat-chip);
+  border: 1px solid var(--chat-border);
+}
+.guardianSummary .gs-stats b {
+  display: block;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+.guardianSummary .gs-stats span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--chat-muted);
+}
+.guardianSummary .gs-sec {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--chat-border);
+}
+.guardianSummary .gs-h {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  color: var(--guardian-accent);
+  margin-bottom: 6px !important;
+}
+.guardianSummary ul {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 4px;
+}
+.guardianSummary .gs-muted { color: var(--chat-muted); }
+.guardianSummary .gs-sec p + p { margin-top: 4px; }
+.guardianChatBody { position: relative; }

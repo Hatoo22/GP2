@@ -7,10 +7,12 @@
 
   <title>Users Management | DIR'A Admin</title>
 
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=19">
+  <style>html.admin-checking body{visibility:hidden}</style>
+  <script src="js/admin-guard.js"></script>
 </head>
 
-<body>
+<body class="fullPage">
 
   <main class="page">
 
@@ -61,10 +63,6 @@
           Reports
         </a>
 
-        <a href="admin-settings.html">
-          Settings
-        </a>
-
         <a
           class="btn"
           href="main-home.html"
@@ -80,217 +78,85 @@
           🌙
         </button>
 
+        <a class="icon profileIcon" href="profile.html" aria-label="My profile">👤</a>
+
       </div>
 
     </nav>
 
 
     <!-- =========================================
-         PAGE TITLE
+         USERS MANAGEMENT
     ========================================== -->
+    <section class="section adminDash agPage auPage">
 
-    <section class="section">
-
-      <p class="mini">
-        ADMIN / USERS
-      </p>
-
-      <h1>
-        Users Management
-      </h1>
-
-      <p class="mini">
-        Manage individual users, government employees and administrators.
-      </p>
-
-    </section>
-
-
-    <!-- =========================================
-         USER TYPE TABS
-    ========================================== -->
-
-    <section class="section">
-
-  <div class="admin-tabs-row">
-
-    <div class="admin-user-tabs">
-
-      <button
-        class="admin-user-tab active"
-        type="button"
-        data-role="individual"
-      >
-        Individuals
-      </button>
-
-      <button
-        class="admin-user-tab"
-        type="button"
-        data-role="employee"
-      >
-        Government Employees
-      </button>
-
-      <button
-        class="admin-user-tab"
-        type="button"
-        data-role="admin"
-      >
-        Admins
-      </button>
-
-    </div>
-
-
-    <button
-      id="addAdminBtn"
-      class="btn"
-      type="button"
-      hidden
-    >
-      + Add Admin
-    </button>
-
-  </div>
-
-</section>
-
-
-    <!-- =========================================
-         SEARCH + FILTER
-    ========================================== -->
-
-    <section class="section">
-
-      <div class="toolbar admin-users-toolbar">
-
-        <div class="search">
-
-          <input
-            type="text"
-            id="adminUserSearch"
-            placeholder="Search by name or email..."
-            autocomplete="off"
-          >
-
-        </div>
-
-
-        <select id="adminUserStatusFilter">
-
-          <option value="all">
-            All Statuses
-          </option>
-
-          <option value="active">
-            Active
-          </option>
-
-          <option value="pending">
-            Pending
-          </option>
-
-          <option value="disabled">
-            Disabled
-          </option>
-
-        </select>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================================
-         SECTION TITLE
-    ========================================== -->
-
-    <section class="section">
-
-      <div class="admin-section-heading">
-
+      <div class="ad-head">
         <div>
+          <p class="ad-eyebrow">ADMIN / USERS</p>
+          <h1>Users Management</h1>
+          <p class="mini">Manage individual users, government employees and administrators.</p>
+        </div>
+      </div>
 
-          <h2 id="adminUsersSectionTitle">
-            Individual Users
-          </h2>
+      <!-- role tabs + add admin -->
+      <div class="ag-tabs-row">
+        <div class="ag-tabs" role="tablist">
+          <button class="ag-tab admin-user-tab is-active" type="button" data-role="individual">👤 Individuals <span id="cntIndividual">0</span></button>
+          <button class="ag-tab admin-user-tab" type="button" data-role="employee">🏢 Government Employees <span id="cntEmployee">0</span></button>
+          <button class="ag-tab admin-user-tab" type="button" data-role="admin">🛡️ Admins <span id="cntAdmin">0</span></button>
+        </div>
+        <button id="addAdminBtn" class="btn ag-add" type="button" hidden>+ Add Admin</button>
+      </div>
 
-          <p
-            class="mini"
-            id="adminUsersSectionDescription"
-          >
-            Registered individual users on the DIR'A platform.
-          </p>
+      <!-- pending approvals notice (employees) -->
+      <div class="au-notice" id="pendingNotice" hidden>
+        <span class="au-notice-icon">⏳</span>
+        <div>
+          <strong id="pendingNoticeText">Accounts are waiting for your approval</strong>
+          <p class="mini">Government employees can't log in until you activate their account.</p>
+        </div>
+        <button class="ag-view" type="button" id="showPendingBtn">Review now →</button>
+      </div>
 
+      <article class="ad-card ag-card">
+
+        <div class="ag-toolbar">
+          <div class="ag-search">
+            <input type="text" id="adminUserSearch" placeholder="Search by name or email..." autocomplete="off">
+          </div>
+          <div class="au-status" id="statusChips" role="group" aria-label="Filter by status">
+            <button type="button" class="is-active" data-status="all">All <span id="stAll">0</span></button>
+            <button type="button" data-status="active"><i style="--c:#22c55e"></i>Active <span id="stActive">0</span></button>
+            <button type="button" data-status="pending"><i style="--c:#f59e0b"></i>Pending <span id="stPending">0</span></button>
+            <button type="button" data-status="disabled"><i style="--c:#ef4444"></i>Disabled <span id="stDisabled">0</span></button>
+            <button type="button" data-status="spam" id="spamChip" hidden><i style="--c:#64748b"></i>Sent spam <span id="stSpam">0</span></button>
+          </div>
         </div>
 
+        <div class="ag-table-wrap">
+          <table class="ag-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th class="ag-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTable">
+              <tr><td colspan="4" class="ad-empty">Loading users…</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-        <span
-          class="pill"
-          id="adminUsersCount"
-        >
-          0 Users
-        </span>
+        <div class="ag-pager">
+          <span class="mini" id="auShowing"></span>
+          <div class="ag-pages" id="auPages"></div>
+        </div>
 
-      </div>
-
-
-      <!-- =========================================
-           USERS TABLE
-      ========================================== -->
-
-      <div class="tableWrap admin-users-table">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                User
-              </th>
-
-              <th>
-                Email
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Joined
-              </th>
-
-              <th>
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody id="adminUsersTable">
-
-            <tr>
-
-              <td colspan="5">
-                Loading users...
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
+      </article>
 
     </section>
-
 
     <!-- =========================================
          FOOTER
@@ -485,7 +351,7 @@
     </h2>
 
     <p class="mini">
-      Enter the email address of the new administrator.
+      We'll email them a link to set their name and password. The link expires in 3 days.
     </p>
 
     <div class="field">
@@ -530,7 +396,7 @@
 </div>
 
   <script src="js/common.js"></script>
-  <script src="js/admin-users.js"></script>
+  <script src="js/admin-users.js?v=4"></script>
 
 </body>
 

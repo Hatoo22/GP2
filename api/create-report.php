@@ -70,6 +70,36 @@ try {
     exit;
   }
 
+  /* ---------- spam protection before saving ---------- */
+  require_once __DIR__ . '/spam-check.php';
+  dira_spam_ensure_columns($conn);
+
+  // the exact same report from the same user in the last 24 hours
+  $normTitle = dira_spam_normalize($title);
+  $chk = $conn->prepare("SELECT title FROM reports WHERE user_id = ? AND game_id = ? AND date_reported >= DATE_SUB(NOW(), INTERVAL 1 DAY)");
+  $chk->bind_param("ii", $user_id, $game_id);
+  $chk->execute();
+  $res = $chk->get_result();
+  while ($row = $res->fetch_assoc()) {
+    if (dira_spam_normalize($row["title"]) === $normTitle) {
+      $chk->close();
+      echo json_encode(["success" => false, "message" => "You already sent this report today. We're reviewing it."]);
+      exit;
+    }
+  }
+  $chk->close();
+
+  // too many reports in a few minutes
+  $chk = $conn->prepare("SELECT COUNT(*) AS n FROM reports WHERE user_id = ? AND date_reported >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)");
+  $chk->bind_param("i", $user_id);
+  $chk->execute();
+  $recent = (int)($chk->get_result()->fetch_assoc()["n"] ?? 0);
+  $chk->close();
+  if ($recent >= 5) {
+    echo json_encode(["success" => false, "message" => "You've sent a lot of reports in a short time. Please wait a few minutes and try again."]);
+    exit;
+  }
+
   // Insert the submitted report into the database
   $sql = "
     INSERT INTO reports
@@ -112,8 +142,21 @@ try {
   );
 
   $stmt->execute();
+  $newReportId = $stmt->insert_id;
 
-  // Insert the submitted report into the database
+  // give the new report its spam score (it may go straight to "Spam")
+  try {
+    dira_spam_save($conn, $newReportId, dira_spam_score($conn, [
+      "report_id" => $newReportId,
+      "user_id" => $user_id,
+      "game_id" => $game_id,
+      "title" => $title,
+      "behavior_other" => $behavior_other,
+    ]));
+  } catch (Throwable $e) {
+    error_log("DIRA spam scoring failed: " . $e->getMessage());
+  }
+
   echo json_encode([
     "success" => true,
     "message" => "Report submitted successfully"
@@ -129,4 +172,4 @@ try {
     "message" => "Server error: " . $e->getMessage()
   ]);
 }
-?>
+?>

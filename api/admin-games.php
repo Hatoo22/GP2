@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/admin-auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -24,23 +25,44 @@ function sendJson($data, $status = 200) {
 
 function steamRequest($url) {
 
+    global $STEAM_LAST_ERROR;
+    $STEAM_LAST_ERROR = "";
+
     $ch = curl_init($url);
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 15);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "DIRA-Platform/1.0");
+
+    // Bundled Mozilla CA list, so HTTPS works on MAMP/Windows too
+    // (SSL verification stays ON).
+    $caBundle = __DIR__ . '/cacert.pem';
+    if (is_file($caBundle)) {
+        curl_setopt($ch, CURLOPT_CAINFO, $caBundle);
+    }
 
     $response = curl_exec($ch);
 
     if (curl_errno($ch)) {
 
+        $STEAM_LAST_ERROR = curl_error($ch);
+        error_log("Steam request failed: " . $STEAM_LAST_ERROR . " | " . $url);
         curl_close($ch);
         return null;
     }
 
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    if ($httpCode >= 400) {
+        $STEAM_LAST_ERROR = "Steam returned HTTP " . $httpCode;
+        return null;
+    }
+
     if (!$response) {
+        $STEAM_LAST_ERROR = "Empty response from Steam";
         return null;
     }
 
@@ -79,6 +101,34 @@ function cleanDate($dateText) {
     return date("Y-m-d", $timestamp);
 }
 
+
+
+/* -----------------------------------------
+   One-time safety net: make the database itself
+   refuse a second row with the same Steam App ID.
+   Skipped quietly if old duplicates already exist.
+----------------------------------------- */
+function ensureUniqueSteamId($conn) {
+    try {
+        $idx = $conn->query("SHOW INDEX FROM games WHERE Column_name = 'api_game_id' AND Non_unique = 0");
+        if ($idx && $idx->num_rows > 0) {
+            return;
+        }
+        $dup = $conn->query("SELECT api_game_id FROM games WHERE api_game_id IS NOT NULL AND api_game_id <> '' GROUP BY api_game_id HAVING COUNT(*) > 1 LIMIT 1");
+        if ($dup && $dup->num_rows > 0) {
+            error_log("DIRA: duplicate api_game_id values exist; unique index not created.");
+            return;
+        }
+        $col = $conn->query("SHOW COLUMNS FROM games LIKE 'api_game_id'");
+        $type = $col ? strtolower($col->fetch_assoc()["Type"] ?? "") : "";
+        $keyPart = str_contains($type, "text") || str_contains($type, "blob")
+            ? "api_game_id(64)"
+            : "api_game_id";
+        $conn->query("ALTER TABLE games ADD UNIQUE KEY uniq_games_api_game_id ($keyPart)");
+    } catch (Throwable $e) {
+        error_log("DIRA: could not create unique index on games.api_game_id: " . $e->getMessage());
+    }
+}
 
 
 /* =========================================
@@ -120,7 +170,8 @@ if ($action === "search") {
         sendJson([
             "success" => false,
             "message" => "Unable to search Steam."
-        ], 500);
+                . ($GLOBALS["STEAM_LAST_ERROR"] ? " (" . $GLOBALS["STEAM_LAST_ERROR"] . ")" : "")
+        ], 502);
     }
 
 
@@ -171,6 +222,8 @@ if ($action === "add") {
         intval(
             $input["appid"] ?? 0
         );
+
+    ensureUniqueSteamId($conn);
 
 
     if ($appid <= 0) {
@@ -454,19 +507,33 @@ if ($action === "add") {
     );
 
 
-    if (!$stmt->execute()) {
+    try {
+        $ok = $stmt->execute();
+        $errno = $stmt->errno;
+        $error = $stmt->error;
+    } catch (mysqli_sql_exception $e) {
+        $ok = false;
+        $errno = $e->getCode();
+        $error = $e->getMessage();
+    }
 
-        $message =
-            $stmt->error;
+    if (!$ok) {
 
         $stmt->close();
 
+        // 1062 = duplicate key: someone added the same game a moment ago
+        if ((int)$errno === 1062) {
+            sendJson([
+                "success" => false,
+                "message" => $gameName . " is already available on DIR'A."
+            ], 409);
+        }
 
         sendJson([
             "success" => false,
             "message" =>
                 "Unable to add game: "
-                . $message
+                . $error
         ], 500);
     }
 

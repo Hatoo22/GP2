@@ -428,17 +428,38 @@ if __name__ == "__main__":
     parser.add_argument('--game-id', type=int, help='Process one game, including previously analyzed games')
     parser.add_argument('--dry-run', action='store_true', help='Fetch and classify without database writes')
     parser.add_argument('--refresh-youtube', action='store_true', help="Ignore this month's cache")
+    parser.add_argument('--only-new', action='store_true', help='Process only games that have not been analyzed yet')
     args = parser.parse_args()
     cursor.execute("SELECT game_name FROM games")
     catalog = [row['game_name'] for row in cursor.fetchall() if row['game_name']]
 
-    cursor.execute("""
-        SELECT game_id, api_game_id, game_name
-        FROM games
-        ORDER BY game_id ASC
-    """)
+    if args.game_id:
+        # one specific game (also re-analyzes it if it was analyzed before)
+        cursor.execute("""
+            SELECT game_id, api_game_id, game_name
+            FROM games
+            WHERE game_id = %s
+        """, (args.game_id,))
+    elif args.only_new:
+        # games added from the admin page that are still waiting for analysis
+        cursor.execute("""
+            SELECT game_id, api_game_id, game_name
+            FROM games
+            WHERE COALESCE(analysis_status, 'no_comments') <> 'analyzed'
+               OR COALESCE(comments_count, 0) = 0
+            ORDER BY game_id ASC
+        """)
+    else:
+        cursor.execute("""
+            SELECT game_id, api_game_id, game_name
+            FROM games
+            ORDER BY game_id ASC
+        """)
 
     games = cursor.fetchall()
+
+    if args.game_id and not games:
+        print(f"No game found with game_id={args.game_id}.")
 
     print([g["game_id"] for g in games])
     print(f"Found {len(games)} games to process.")

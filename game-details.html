@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Game Details</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <title>Game Overview | DIR'A</title>
+  <link rel="stylesheet" href="style.css?v=23">
 </head>
 
-<body>
+<body class="fullPage">
   <main class="page">
 
     <nav class="nav">
@@ -19,7 +19,7 @@
       <div class="links">
         <a href="home.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="my-reports.html">Reports</a>
+        <a href="my-reports.html">Complaints</a>
         <a href="tracked-games.html">My List</a>
         <a class="btn" href="main-home.html">Log Out</a>
         <button onclick="toggleTheme()" class="icon">🌙</button>
@@ -27,103 +27,76 @@
       </div>
     </nav>
 
-    <section
-  class="section"
-  id="gameDetailsSection"
->
-  <h1>Game Overview</h1>
+    <section class="section adminDash gxPage" id="gameDetailsSection">
 
-      <div class="detailTop animate">
-        <div class="game-hero-thumb">
-  <div class="top-pills" id="gameDetailPills"></div>
-  <img id="gameImage" src="" alt="Game image">
-</div>
+  <a class="gx-back" href="games.html">← All games</a>
 
-        <h2 id="gameName">Game Name</h2>
+  <!-- hero -->
+  <div class="gx-hero">
+    <div class="gx-cover">
+      <img id="gameImage" src="" alt="">
+    </div>
 
-        <p>
-          <b>Description:</b>
-          <span id="gameDescription">
-            AI-analyzed gaming community risk report based on public reviews and player interactions.
-          </span>
-        </p>
+    <div class="gx-info">
+      <div class="gx-pills" id="gameDetailPills"></div>
+      <h1 id="gameName">Loading…</h1>
+      <p class="gx-meta" id="gameMeta"></p>
+      <div class="gx-tags" id="gameGenres"></div>
+      <p class="gx-desc" id="gameDescription"></p>
 
-        <div class="tags" id="gameGenres">
-          <span class="tag">Genre</span>
-        </div>
-
-        <br>
-
-        <div class="detailActions">
-
-  <button
-    class="btn"
-    id="trackGameBtn"
-    onclick="trackGame()"
-  >
-    Track
-  </button>
-
-  <a
-    class="btn"
-    id="saferAlternativeBtn"
-    href="#"
-  >
-    Safer Alternative
-  </a>
-
-  <button
-    class="btn"
-    id="reportGameBtn"
-    onclick="openReportModal()"
-  >
-    Report
-  </button>
-
-</div>
+      <div class="gx-actions">
+        <button class="btn" id="trackGameBtn" type="button" onclick="trackGame()">Track</button>
+        <a class="gx-btn" id="saferAlternativeBtn" href="#">Safer alternative</a>
+        <button class="gx-btn gx-btn--warn" id="reportGameBtn" type="button" onclick="openReportModal()">Report</button>
       </div>
+    </div>
+  </div>
 
-      <br>
+  <!-- not analyzed yet -->
+  <div class="gx-empty" id="noAnalysisMessage" style="display:none;">
+    <h2>Not analyzed yet</h2>
+    <p>This game is new and doesn't have enough player comments for a risk analysis.</p>
+  </div>
 
-      <p id="noAnalysisMessage" class="mini" style="display:none;">
-  This game is still new and does not have enough comments for risk analysis yet.
-</p>
-      <div class="detailMetrics">
-        <div class="metric animate">
-          <h2>Overall Risk Assessment</h2>
+  <!-- risk -->
+  <div class="detailMetrics gx-risk">
 
-          <div class="gauge-circle" id="overallGauge">
-              <span id="overallRiskPercent">0%</span>
-          </div>
-
-          
-          <p>Risk Level <b style="float:right" id="overallRiskLevel">Low</b></p>
-          <p>Last Updated <b style="float:right" id="lastUpdated">Today</b></p>
-        </div>
-
-        <div class="metric animate">
-          <h2>Risk Breakdown</h2>
-
-          <p>Bullying <span id="bullyingPercent">0%</span></p>
-          <div class="bar"><i id="bullyingBar" style="width:0%"></i></div>
-
-          <p>Sexual Harassment <span id="sexualPercent">0%</span></p>
-          <div class="bar"><i id="sexualBar" style="width:0%"></i></div>
-
-          <p>Threat <span id="threatPercent">0%</span></p>
-          <div class="bar"><i id="threatBar" style="width:0%"></i></div>
-
-          <p>Hate Speech <span id="hatePercent">0%</span></p>
-          <div class="bar"><i id="hateBar" style="width:0%"></i></div>
-
-          <p>Other Toxicity <span id="otherPercent">0%</span></p>
-          <div class="bar"><i id="otherBar" style="width:0%"></i></div>
+    <article class="gx-card gx-overall">
+      <h2>Overall risk</h2>
+      <div class="gx-ring" id="overallGauge">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="gx-ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="gx-ring-fg" id="overallRing" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div class="gx-ring-num">
+          <strong id="overallRiskPercent">0%</strong>
+          <span id="overallRiskLevel">Low</span>
         </div>
       </div>
-    </section>
+      <p class="gx-verdict" id="riskVerdict"></p>
+      <dl class="gx-facts">
+        <div><dt>Comments analyzed</dt><dd id="commentsCount">0</dd></div>
+        <div><dt>Last updated</dt><dd id="lastUpdated">—</dd></div>
+      </dl>
+    </article>
+
+    <article class="gx-card gx-breakdown">
+      <div class="gx-card-head">
+        <h2>What players run into</h2>
+      </div>
+      <ul class="gx-bars" id="riskBreakdown"></ul>
+      <p class="gx-scale">
+        <span><i style="--c:#22c55e"></i>Low · under 31%</span>
+        <span><i style="--c:#f59e0b"></i>Medium · 31–69%</span>
+        <span><i style="--c:#ef4444"></i>High · 70%+</span>
+      </p>
+    </article>
+
+  </div>
+</section>
 
     <section
-  class="section"
+  class="section gxComment"
   id="gameCommentSection"
   hidden
 >
@@ -291,7 +264,7 @@
 
 
   <script src="js/common.js"></script>
-  <script src="js/game-details.js?v=5"></script>
+  <script src="js/game-details.js?v=6"></script>
 </body>
 
 </html>

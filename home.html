@@ -5,10 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Home</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 
-<body>
+<body class="fullPage">
   <main class="page">
 
     <nav class="nav">
@@ -19,7 +19,7 @@
       <div class="links">
         <a class="active" href="home.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="my-reports.html">Reports</a>
+        <a href="my-reports.html">Complaints</a>
         <a href="tracked-games.html">My List</a>
         <a class="btn" href="main-home.html">Log Out</a>
         <button onclick="toggleTheme()" class="icon">🌙</button>
@@ -31,7 +31,7 @@
   <div class="heroContent">
     <h1 id="welcomeName">Hello!</h1>
     <div class="search">
-      <input id="homeSearch" placeholder="Search 🔍">
+      <input id="homeSearch" placeholder="Search...">
     </div>
   </div>
 
@@ -46,26 +46,26 @@
       <div class="dashStats">
         <div class="dashBox">
           <span class="pill">Tracked Games</span>
-          <h2><span id="trackedCount">0</span> 🎮</h2>
+          <h2><span id="trackedCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3"/><path d="M5.5 12.5h3"/><circle cx="15.5" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13.5" r=".6" fill="currentColor"/></svg></span></h2>
           <p class="mini">Number of games you followed</p>
         </div>
 
         <div class="dashBox">
           <span class="pill">Active Alerts</span>
-          <h2><span id="alertsCount">0</span> 🚨</h2>
+          <h2><span id="alertsCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></h2>
           <p class="mini">Number of high-risk games</p>
         </div>
 
         <div class="dashBox">
-          <span class="pill">Reports Under Review</span>
-          <h2><span id="reportsReviewCount">0</span> 📊</h2>
-          <p class="mini">Number of reports in review</p>
+          <span class="pill">Complaints Under Review</span>
+          <h2><span id="reportsReviewCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></h2>
+          <p class="mini">Complaints an employee is reviewing</p>
         </div>
 
         <div class="dashBox">
-  <span class="pill">Submitted Reports</span>
-  <h2><span id="submittedReportsCount">0</span> 📝</h2>
-  <p class="mini">Number of reports you submitted</p>
+  <span class="pill">Submitted Complaints</span>
+  <h2><span id="submittedReportsCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span></h2>
+  <p class="mini">Complaints you sent</p>
 </div>
       </div>
     </section>
@@ -91,7 +91,7 @@
   </main>
 
   <script src="js/common.js"></script>
-  <script src="js/marquee.js?v=5"></script>
+  <script src="js/marquee.js?v=7"></script>
   <script src="js/home.js?v=5"></script>
 </body>
 

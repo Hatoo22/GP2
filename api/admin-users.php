@@ -1,8 +1,10 @@
 <?php
+require_once __DIR__ . '/admin-auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/db.php';
 
 
 /* =========================================
@@ -34,6 +36,8 @@ $allowedStatuses = [
     "pending",
     "disabled"
 ];
+// note: "invited" admins are created by admin-invite.php and become active
+// when they accept; their status can't be set from this endpoint.
 
 
 
@@ -359,6 +363,14 @@ if (
 }
 
 
+// how many of each user's reports were marked as spam
+require_once __DIR__ . '/spam-check.php';
+dira_spam_ensure_columns($conn);
+try { dira_spam_backfill($conn); } catch (Throwable $e) {}
+$spamSelect = ",
+    (SELECT COUNT(*) FROM reports r WHERE r.user_id = users.user_id AND COALESCE(r.is_spam,0) = 1) AS spam_count,
+    (SELECT COUNT(*) FROM reports r WHERE r.user_id = users.user_id) AS report_count";
+
 $sql = "
 SELECT
     user_id,
@@ -368,11 +380,12 @@ SELECT
     status,
     created_at,
     profile_avatar,
-    is_main_admin
+    is_main_admin" . $spamSelect . "
 
 FROM users
 
 WHERE role = ?
+" . (in_array('deleted_at', get_columns($conn, 'users'), true) ? " AND deleted_at IS NULL" : "") . "
 
 ORDER BY created_at DESC, user_id DESC
 ";

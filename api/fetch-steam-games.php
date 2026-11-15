@@ -22,7 +22,10 @@ function getSteamGameDetails($appid) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    // keep SSL verification on; use the bundled CA list when present
+    if (is_file(__DIR__ . '/cacert.pem')) {
+        curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+    }
 
     $response = curl_exec($ch);
     
@@ -183,4 +186,4 @@ foreach ($skipWords as $word) {
 }
 
 echo "<br>Done. Saved $savedCount games.";
-?>
+?>

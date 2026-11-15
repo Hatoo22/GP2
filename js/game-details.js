@@ -157,6 +157,78 @@ function renderDetailPills(game, isNew) {
        <span class="pill ${riskClass}">${level}</span>`;
 }
 
+
+// ---------- overview rendering ----------
+const RISK_LABELS = [
+  ["bullying", "Bullying", "Picking on, mocking or ganging up on players"],
+  ["hate_speech", "Hate speech", "Attacks on race, religion, gender or origin"],
+  ["threat", "Threats", "Threats of harm, doxxing or real-life violence"],
+  ["sexual_harassment", "Sexual harassment", "Unwanted sexual comments or content"],
+  ["other_toxicity", "Other toxicity", "Insults, swearing and general hostility"]
+];
+
+function riskLevelOf(v) {
+  v = Number(v || 0);
+  return v >= 70 ? "High" : v >= 31 ? "Medium" : "Low";
+}
+
+function formatAnalyzedDate(value) {
+  if (!value) return "—";
+  const d = new Date(String(value).replace(" ", "T"));
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function renderRisk(game) {
+  const overall = Number(game.overall_risk_percent || 0);
+  const color = getRiskColor(overall);
+  const level = game.overall_risk_level || riskLevelOf(overall);
+
+  // ring
+  const ring = document.getElementById("overallRing");
+  if (ring) {
+    const c = 2 * Math.PI * 52;
+    ring.style.strokeDasharray = `${c}`;
+    ring.style.strokeDashoffset = `${c}`;
+    ring.style.stroke = color;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      ring.style.strokeDashoffset = `${c * (1 - Math.min(overall, 100) / 100)}`;
+    }));
+  }
+  setText("overallRiskPercent", `${Math.round(overall)}%`);
+  const levelEl = document.getElementById("overallRiskLevel");
+  if (levelEl) { levelEl.textContent = `${level} risk`; levelEl.style.color = color; }
+
+  setText("commentsCount", Number(game.comments_count || 0).toLocaleString("en-US"));
+  setText("lastUpdated", formatAnalyzedDate(game.analyzed_at));
+
+  // breakdown, biggest first
+  const rows = RISK_LABELS.map(([key, label, hint]) => ({
+    key, label, hint, value: labelPercent(game[key], game.comments_count)
+  })).sort((a, b) => b.value - a.value);
+
+  const list = document.getElementById("riskBreakdown");
+  if (list) {
+    list.innerHTML = rows.map((r) => `
+      <li>
+        <div class="gx-bar-top">
+          <span><b>${r.label}</b><small>${r.hint}</small></span>
+          <strong style="color:${getRiskColor(r.value)}">${Math.round(r.value)}%</strong>
+        </div>
+        <div class="gx-bar"><i style="--w:${Math.min(r.value, 100)}%; --c:${getRiskColor(r.value)}"></i></div>
+      </li>`).join("");
+  }
+
+  // one-line verdict
+  const top = rows[0];
+  const verdict = document.getElementById("riskVerdict");
+  if (verdict) {
+    verdict.textContent = top && top.value > 0
+      ? `${top.label} is the most common problem in this community.`
+      : "Players rarely report harmful behavior here.";
+  }
+}
+
 async function loadGameDetails() {
   if (!gameId) {
     alert("Missing game_id in URL. Open this page from View Details button.");
@@ -197,85 +269,7 @@ if (isNoAnalysis) {
   if (noAnalysisMessage) noAnalysisMessage.style.display = "none";
   if (detailMetrics) detailMetrics.style.display = "grid";
 
-  setText("overallRiskPercent", `${game.overall_risk_percent || 0}%`);
-  setText("overallRiskLevel", game.overall_risk_level || "Low");
-  setText("lastUpdated", game.analyzed_at || "Today");
-
-  const overallGauge =
-  document.getElementById("overallGauge");
-
-const overallRiskLevel =
-  document.getElementById("overallRiskLevel");
-
-const overallRisk =
-  Number(game.overall_risk_percent || 0);
-
-const overallColor =
-  getRiskColor(overallRisk);
-
-if (overallGauge) {
-
-  overallGauge.style.setProperty(
-    "--p",
-    `${overallRisk}%`
-  );
-
-  overallGauge.style.background =
-    `conic-gradient(
-      ${overallColor} ${overallRisk}%,
-      rgba(128, 128, 128, 0.18) 0
-    )`;
-
-  overallGauge.style.boxShadow =
-    `0 0 24px ${overallColor}55`;
-}
-
-if (overallRiskLevel) {
-  overallRiskLevel.style.color =
-    overallColor;
-}
-
-const threat =
-  labelPercent(
-    game.threat,
-    game.comments_count
-  );
-
-const bullying =
-  labelPercent(
-    game.bullying,
-    game.comments_count
-  );
-
-const sexual =
-  labelPercent(
-    game.sexual_harassment,
-    game.comments_count
-  );
-
-const other =
-  labelPercent(
-    game.other_toxicity,
-    game.comments_count
-  );
-
-const hate =
-  labelPercent(
-    game.hate_speech,
-    game.comments_count
-  );
-
-  setText("bullyingPercent", `${bullying}%`);
-  setText("sexualPercent", `${sexual}%`);
-  setText("threatPercent", `${threat}%`);
-  setText("hatePercent", `${hate}%`);
-  setText("otherPercent", `${other}%`);
-
-  setBar("bullyingBar", bullying);
-  setBar("sexualBar", sexual);
-  setBar("threatBar", threat);
-  setBar("hateBar", hate);
-  setBar("otherBar", other);
+  renderRisk(game);
 }
 
 const saferBtn = document.getElementById("saferAlternativeBtn");
@@ -294,12 +288,16 @@ if (gameImage) {
   gameImage.alt = game.game_name || "Game image";
 }
     setText("gameDescription", game.description || "");
+    const year = game.release_date ? String(game.release_date).slice(0, 4) : "";
+    setText("gameMeta", [game.platform, year && year !== "0000" ? `Released ${year}` : ""].filter(Boolean).join(" · "));
+    document.title = `${game.game_name || "Game"} | DIR'A`;
 
 
     setHTML("gameGenres", `
   ${(game.genre || "")
     .split(",")
-    .map(g => `<span class="tag">${g.trim()}</span>`)
+    .filter(g => g.trim())
+    .map(g => `<span>${g.trim()}</span>`)
     .join("")}
 `);
 
