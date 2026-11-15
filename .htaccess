@@ -1,0 +1,7 @@
+# Always check for a newer version of pages, scripts and styles,
+# so updates show up without a hard refresh (Ctrl + F5).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
