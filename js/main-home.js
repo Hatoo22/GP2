@@ -6,7 +6,7 @@ const riskClass = isNew ? "new-pill" : `risk-${String(game.overall_risk_level ||
   return `
     <article class="card marquee-card">
       <div class="top-pills">
-  ${isNew ? "" : `<span class="pill">${game.overall_risk_percent ?? 0}% Risk</span>`}
+  ${isNew ? "" : `<span class="pill">${diraPct(game.overall_risk_percent)} Risk</span>`}
   <span class="pill ${riskClass}">
     ${isNew ? "New" : (game.overall_risk_level ?? "Low")}
   </span>
@@ -99,7 +99,7 @@ function startPicks(showcase) {
           <strong>${esc(g.game_name)}</strong>
           <div class="mh-pick-row">
             <span class="mh-pick-meter"><i style="--w:${Math.max(3, Math.min(100, pct))}%"></i></span>
-            <span class="mh-pick-pct">${pct.toFixed(0)}%</span>
+            <span class="mh-pick-pct">${diraPct(pct)}</span>
           </div>
         </div>
         <span class="mh-pick-level">${level.charAt(0).toUpperCase() + level.slice(1)}</span>

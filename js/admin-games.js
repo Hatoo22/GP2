@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                </div>`}
         </td>
         <td>
-          <span class="ad-pill" style="--c:${color}">${isNew ? "New" : escapeHtml(lvl.charAt(0).toUpperCase() + lvl.slice(1))}</span>
+          <span class="dsh-pill" style="--c:${color}">${isNew ? "New" : escapeHtml(lvl.charAt(0).toUpperCase() + lvl.slice(1))}</span>
         </td>
         <td>
           <div class="ag-analysis">
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     tableBody.innerHTML = slice.length
       ? slice.map(rowHtml).join("")
-      : `<tr><td colspan="5" class="ad-empty">No games match your search.</td></tr>`;
+      : `<tr><td colspan="5" class="dsh-empty">No games match your search.</td></tr>`;
 
     showing.textContent = list.length
       ? `Showing ${start + 1}–${start + slice.length} of ${nf.format(list.length)} games`
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     render();
   } catch (error) {
     console.error(error);
-    tableBody.innerHTML = `<tr><td colspan="5" class="ad-empty">Unable to load games.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="5" class="dsh-empty">Unable to load games.</td></tr>`;
   }
 
   /* =========================================================

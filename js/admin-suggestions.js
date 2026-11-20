@@ -54,11 +54,11 @@
     });
 
     if (!items.length) {
-      list.innerHTML = `<li class="ad-empty">No suggestions yet. They'll appear here when users send them through the Dir'a Assistant.</li>`;
+      list.innerHTML = `<li class="dsh-empty">No suggestions yet. They'll appear here when users send them through the Dir'a Assistant.</li>`;
       return;
     }
     if (!shown.length) {
-      list.innerHTML = `<li class="ad-empty">Nothing matches these filters.</li>`;
+      list.innerHTML = `<li class="dsh-empty">Nothing matches these filters.</li>`;
       return;
     }
 
@@ -137,7 +137,7 @@
       counts();
       render();
     } catch (err) {
-      list.innerHTML = `<li class="ad-empty">${esc(err.message)}</li>`;
+      list.innerHTML = `<li class="dsh-empty">${esc(err.message)}</li>`;
     }
   }
   load();

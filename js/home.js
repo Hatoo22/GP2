@@ -15,7 +15,7 @@ const riskClass = isNew ? "new-pill" : `risk-${String(game.overall_risk_level ||
   return `
     <article class="card marquee-card">
       <div class="top-pills">
-  ${isNew ? "" : `<span class="pill">${game.overall_risk_percent ?? 0}% Risk</span>`}
+  ${isNew ? "" : `<span class="pill">${diraPct(game.overall_risk_percent)} Risk</span>`}
   <span class="pill ${riskClass}">
     ${isNew ? "New" : (game.overall_risk_level ?? "Low")}
   </span>

@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css?v=56">
+  <link rel="stylesheet" href="style.css?v=59">
   <style>html.admin-checking body{visibility:hidden}</style>
   <script src="js/admin-guard.js"></script>
 </head>
@@ -95,113 +95,113 @@
     ========================================== -->
     <section class="section adminDash">
 
-      <div class="ad-head">
+      <div class="dsh-head">
         <div>
-          <p class="ad-eyebrow">DIR'A ADMINISTRATION</p>
+          <p class="dsh-eyebrow">DIR'A ADMINISTRATION</p>
           <h1 id="adGreeting">Welcome back</h1>
           <p class="mini">Here's what's happening on the platform today.</p>
         </div>
-        <div class="ad-date" id="adToday"></div>
+        <div class="dsh-date" id="adToday"></div>
       </div>
 
       <!-- KPI band -->
-      <div class="ad-kpis">
-        <a class="ad-kpi" href="admin-games.html">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r="0.6" fill="currentColor"/><circle cx="17.5" cy="13" r="0.6" fill="currentColor"/></svg></span>
+      <div class="dsh-kpis">
+        <a class="dsh-kpi" href="admin-games.html">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r="0.6" fill="currentColor"/><circle cx="17.5" cy="13" r="0.6" fill="currentColor"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Games</p>
-            <p class="ad-kpi-value" id="kpiGames">–</p>
-            <p class="ad-kpi-sub" id="kpiGamesSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Games</p>
+            <p class="dsh-kpi-value" id="kpiGames">–</p>
+            <p class="dsh-kpi-sub" id="kpiGamesSub">&nbsp;</p>
           </div>
         </a>
-        <a class="ad-kpi" href="admin-users.html">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <a class="dsh-kpi" href="admin-users.html">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Users</p>
-            <p class="ad-kpi-value" id="kpiUsers">–</p>
-            <p class="ad-kpi-sub" id="kpiUsersSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Users</p>
+            <p class="dsh-kpi-value" id="kpiUsers">–</p>
+            <p class="dsh-kpi-sub" id="kpiUsersSub">&nbsp;</p>
           </div>
         </a>
-        <a class="ad-kpi" href="admin-users.html?role=employee&amp;status=pending" id="kpiEmployeesLink">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></svg></span>
+        <a class="dsh-kpi" href="admin-users.html?role=employee&amp;status=pending" id="kpiEmployeesLink">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Gov. Employees</p>
-            <p class="ad-kpi-value" id="kpiEmployees">–</p>
-            <p class="ad-kpi-sub" id="kpiEmployeesSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Gov. Employees</p>
+            <p class="dsh-kpi-value" id="kpiEmployees">–</p>
+            <p class="dsh-kpi-sub" id="kpiEmployeesSub">&nbsp;</p>
           </div>
         </a>
-        <a class="ad-kpi" href="admin-complaints.html">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/></svg></span>
+        <a class="dsh-kpi" href="admin-complaints.html">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Reports</p>
-            <p class="ad-kpi-value" id="kpiReports">–</p>
-            <p class="ad-kpi-sub" id="kpiReportsSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Reports</p>
+            <p class="dsh-kpi-value" id="kpiReports">–</p>
+            <p class="dsh-kpi-sub" id="kpiReportsSub">&nbsp;</p>
           </div>
         </a>
       </div>
 
       <!-- charts row -->
-      <div class="ad-grid ad-grid--charts">
+      <div class="dsh-grid dsh-grid--charts">
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
               <h2>Games by risk level</h2>
               <p class="mini">How safe the game library is right now</p>
             </div>
-            <a class="ad-link" href="admin-games.html">Manage games →</a>
+            <a class="dsh-link" href="admin-games.html">Manage games →</a>
           </header>
-          <div class="ad-risk">
-            <div class="ad-donut" id="riskDonut">
-              <div class="ad-donut-center">
+          <div class="dsh-risk">
+            <div class="dsh-donut" id="riskDonut">
+              <div class="dsh-donut-center">
                 <strong id="riskTotal">–</strong>
                 <span>games</span>
               </div>
             </div>
-            <ul class="ad-legend" id="riskLegend"></ul>
+            <ul class="dsh-legend" id="riskLegend"></ul>
           </div>
         </article>
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
               <h2>Reports overview</h2>
               <p class="mini">Status and most reported behaviors</p>
             </div>
-            <a class="ad-link" href="admin-complaints.html">View reports →</a>
+            <a class="dsh-link" href="admin-complaints.html">View reports →</a>
           </header>
-          <div class="ad-status-bar" id="statusBar"></div>
-          <ul class="ad-status-legend" id="statusLegend"></ul>
-          <div class="ad-bars" id="behaviorBars"></div>
+          <div class="dsh-status-bar" id="statusBar"></div>
+          <ul class="dsh-status-legend" id="statusLegend"></ul>
+          <div class="dsh-bars" id="behaviorBars"></div>
         </article>
 
       </div>
 
       <!-- lists row -->
-      <div class="ad-grid ad-grid--lists">
+      <div class="dsh-grid dsh-grid--lists">
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
               <h2>Needs attention</h2>
               <p class="mini">Games with the most user reports</p>
             </div>
           </header>
-          <ul class="ad-list" id="topGames">
-            <li class="ad-empty">Loading…</li>
+          <ul class="dsh-list" id="topGames">
+            <li class="dsh-empty">Loading…</li>
           </ul>
         </article>
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
-              <h2>Latest suggestions <span class="ad-badge" id="newSuggestions" hidden></span></h2>
+              <h2>Latest suggestions <span class="dsh-badge" id="newSuggestions" hidden></span></h2>
               <p class="mini">Sent by users through the Dir'a Assistant</p>
             </div>
-            <a class="ad-link" href="admin-suggestions.html">View all →</a>
+            <a class="dsh-link" href="admin-suggestions.html">View all →</a>
           </header>
-          <ul class="ad-list" id="latestSuggestions">
-            <li class="ad-empty">Loading…</li>
+          <ul class="dsh-list" id="latestSuggestions">
+            <li class="dsh-empty">Loading…</li>
           </ul>
         </article>
 
@@ -240,9 +240,9 @@
   </main>
 
 
-  <script src="js/common.js?v=10"></script>
+  <script src="js/common.js?v=13"></script>
 
-  <script src="js/admin-dashboard.js?v=4"></script>
+  <script src="js/admin-dashboard.js?v=30"></script>
 
 </body>
 

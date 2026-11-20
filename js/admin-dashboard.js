@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     data = await res.json();
     if (!data.success) throw new Error();
   } catch {
-    document.querySelectorAll(".ad-empty").forEach((el) => (el.textContent = "Couldn't load data."));
+    document.querySelectorAll(".dsh-empty").forEach((el) => (el.textContent = "Couldn't load data."));
     return;
   }
 
@@ -115,10 +115,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const pct = totalGames ? Math.round((risk[k] / totalGames) * 100) : 0;
     return `
       <li>
-        <span class="ad-dot" style="background:${RISK_COLORS[k]}"></span>
-        <span class="ad-legend-label">${labels[k]}</span>
-        <span class="ad-legend-value">${nf.format(risk[k] || 0)}</span>
-        <span class="ad-legend-pct">${pct}%</span>
+        <span class="dsh-dot" style="background:${RISK_COLORS[k]}"></span>
+        <span class="dsh-legend-label">${labels[k]}</span>
+        <span class="dsh-legend-value">${nf.format(risk[k] || 0)}</span>
+        <span class="dsh-legend-pct">${pct}%</span>
       </li>`;
   }).join("");
 
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `<span style="flex:${r.total};background:${colorFor(r.status)}" title="${escapeHtml(r.status)}: ${r.total}"></span>`
     ).join("");
     $("statusLegend").innerHTML = statuses.map((r) => `
-      <li><span class="ad-dot" style="background:${colorFor(r.status)}"></span>
+      <li><span class="dsh-dot" style="background:${colorFor(r.status)}"></span>
       ${escapeHtml(r.status)} <strong>${nf.format(r.total)}</strong></li>`).join("");
   } else {
     $("statusBar").innerHTML = `<span style="flex:1;background:var(--line)"></span>`;
@@ -143,12 +143,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const behaviors = data.behaviors || [];
   const maxB = Math.max(1, ...behaviors.map((b) => b.total));
   $("behaviorBars").innerHTML = `
-    <p class="ad-subtitle">Most reported behaviors</p>
+    <p class="dsh-subtitle">Most reported behaviors</p>
     ${behaviors.map((b) => `
-      <div class="ad-bar-row">
-        <span class="ad-bar-label">${escapeHtml(b.label)}</span>
-        <span class="ad-bar-track"><i style="width:${(b.total / maxB) * 100}%"></i></span>
-        <span class="ad-bar-value">${nf.format(b.total)}</span>
+      <div class="dsh-bar-row">
+        <span class="dsh-bar-label">${escapeHtml(b.label)}</span>
+        <span class="dsh-bar-track"><i style="width:${(b.total / maxB) * 100}%"></i></span>
+        <span class="dsh-bar-value">${nf.format(b.total)}</span>
       </div>`).join("")}`;
 
   /* ---------- needs attention ---------- */
@@ -159,19 +159,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         const level = isNew ? "New" : (g.overall_risk_level || "Low");
         const key = level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
         return `
-          <li class="ad-item">
+          <li class="dsh-item">
             ${g.image_url
-              ? `<img class="ad-thumb" src="${escapeHtml(g.image_url)}" alt="">`
-              : `<span class="ad-thumb ad-thumb--empty"></span>`}
-            <div class="ad-item-main">
+              ? `<img class="dsh-thumb" src="${escapeHtml(g.image_url)}" alt="">`
+              : `<span class="dsh-thumb dsh-thumb--empty"></span>`}
+            <div class="dsh-item-main">
               <strong>${escapeHtml(g.game_name)}</strong>
               <span class="mini">${isNew ? "Not analyzed yet" : `${Number(g.overall_risk_percent || 0)}% risk score`}</span>
             </div>
-            <span class="ad-pill" style="--c:${RISK_COLORS[key] || RISK_COLORS.New}">${escapeHtml(key)}</span>
-            <span class="ad-count">${nf.format(g.reports)}<small>reports</small></span>
+            <span class="dsh-pill" style="--c:${RISK_COLORS[key] || RISK_COLORS.New}">${escapeHtml(key)}</span>
+            <span class="dsh-count">${nf.format(g.reports)}<small>reports</small></span>
           </li>`;
       }).join("")
-    : `<li class="ad-empty">No reported games yet 🎉</li>`;
+    : `<li class="dsh-empty">No reported games yet 🎉</li>`;
 
   /* ---------- suggestions ---------- */
   const sug = data.suggestions || [];
@@ -183,14 +183,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     ? sug.map((f) => {
         const isGame = f.type === "game_suggestion";
         return `
-          <li class="ad-item ad-item--suggestion">
-            <span class="ad-sug-icon">${isGame ? ICON_GAME : ICON_IDEA}</span>
-            <div class="ad-item-main">
+          <li class="dsh-item dsh-item--suggestion">
+            <span class="dsh-sug-icon">${isGame ? ICON_GAME : ICON_IDEA}</span>
+            <div class="dsh-item-main">
               <strong>${escapeHtml(f.message)}</strong>
               <span class="mini">${isGame ? "Game suggestion" : "Suggestion"} · ${escapeHtml(f.user_name || "User")} · ${timeAgo(f.created_at)}</span>
             </div>
-            ${f.status === "new" ? `<span class="ad-new-dot" title="New"></span>` : ""}
+            ${f.status === "new" ? `<span class="dsh-new-dot" title="New"></span>` : ""}
           </li>`;
       }).join("")
-    : `<li class="ad-empty">No suggestions yet. They'll appear here when users send them through the assistant.</li>`;
+    : `<li class="dsh-empty">No suggestions yet. They'll appear here when users send them through the assistant.</li>`;
 });

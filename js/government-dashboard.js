@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const pill = (text, color) =>
-    `<span class="ad-pill" style="--c:${color}">${escapeHtml(text)}</span>`;
+    `<span class="dsh-pill" style="--c:${color}">${escapeHtml(text)}</span>`;
 
   /* ---------- header ---------- */
   const hour = new Date().getHours();
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     data = await res.json();
     if (!data.success) throw new Error();
   } catch {
-    document.querySelectorAll(".ad-empty").forEach((el) => (el.textContent = "Couldn't load data."));
+    document.querySelectorAll(".dsh-empty").forEach((el) => (el.textContent = "Couldn't load data."));
     return;
   }
 
@@ -95,16 +95,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   function gameRow(g, i) {
     const lvl = levelKey(g);
     return `
-      <li class="ad-item gd-game ${i === 0 ? "is-active" : ""}" data-id="${g.game_id}" tabindex="0" role="button">
+      <li class="dsh-item gd-game ${i === 0 ? "is-active" : ""}" data-id="${g.game_id}" tabindex="0" role="button">
         ${g.image_url
-          ? `<img class="ad-thumb" src="${escapeHtml(g.image_url)}" alt="" loading="lazy">`
-          : `<span class="ad-thumb ad-thumb--empty"></span>`}
-        <div class="ad-item-main">
+          ? `<img class="dsh-thumb" src="${escapeHtml(g.image_url)}" alt="" loading="lazy">`
+          : `<span class="dsh-thumb dsh-thumb--empty"></span>`}
+        <div class="dsh-item-main">
           <strong>${escapeHtml(g.game_name)}</strong>
           <span class="mini">${lvl === "new" ? "Not analyzed yet" : `${Number(g.overall_risk_percent).toFixed(2)}% risk score`}</span>
         </div>
         ${pill(lvl === "new" ? "New" : lvl.charAt(0).toUpperCase() + lvl.slice(1), RISK_COLORS[lvl])}
-        <span class="ad-count">${nf.format(g.report_count)}<small>${g.report_count === 1 ? "complaint" : "complaints"}</small></span>
+        <span class="dsh-count">${nf.format(g.report_count)}<small>${g.report_count === 1 ? "complaint" : "complaints"}</small></span>
       </li>`;
   }
 
@@ -139,10 +139,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       <p class="gd-label">Contribution by behavior</p>
       ${rows.map((r) => `
-        <div class="ad-bar-row">
-          <span class="ad-bar-label">${LABELS[r.k]}</span>
-          <span class="ad-bar-track"><i style="width:${(r.value / max) * 100}%"></i></span>
-          <span class="ad-bar-value">${r.value.toFixed(1)}%</span>
+        <div class="dsh-bar-row">
+          <span class="dsh-bar-label">${LABELS[r.k]}</span>
+          <span class="dsh-bar-track"><i style="width:${(r.value / max) * 100}%"></i></span>
+          <span class="dsh-bar-value">${r.value.toFixed(1)}%</span>
         </div>`).join("")}
 
       <p class="mini gd-note">Based on ${nf.format(total)} analyzed player comments.</p>
@@ -179,8 +179,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderGames();
     });
   } else {
-    list.innerHTML = `<li class="ad-empty">No games have complaints yet.</li>`;
-    $("gdAnalysis").innerHTML = `<div class="ad-empty">Nothing to analyze yet.</div>`;
+    list.innerHTML = `<li class="dsh-empty">No games have complaints yet.</li>`;
+    $("gdAnalysis").innerHTML = `<div class="dsh-empty">Nothing to analyze yet.</div>`;
   }
 
   function selectGame(li) {
@@ -227,10 +227,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const behaviors = data.behaviors || [];
   const maxB = Math.max(1, ...behaviors.map((b) => b.total));
   $("gdBehaviors").innerHTML = behaviors.map((b) => `
-    <div class="ad-bar-row">
-      <span class="ad-bar-label">${escapeHtml(b.label)}</span>
-      <span class="ad-bar-track"><i style="width:${(b.total / maxB) * 100}%"></i></span>
-      <span class="ad-bar-value">${nf.format(b.total)}</span>
+    <div class="dsh-bar-row">
+      <span class="dsh-bar-label">${escapeHtml(b.label)}</span>
+      <span class="dsh-bar-track"><i style="width:${(b.total / maxB) * 100}%"></i></span>
+      <span class="dsh-bar-value">${nf.format(b.total)}</span>
     </div>`).join("");
 
   const sev = data.severity || {};
@@ -241,5 +241,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         `<span style="flex:${sev[k]};background:${SEVERITY_COLORS[k]}" title="${l}: ${sev[k]}"></span>`).join("")
     : `<span style="flex:1;background:var(--line)"></span>`;
   $("gdSeverityLegend").innerHTML = sevOrder.map(([k, l]) => `
-    <li><span class="ad-dot" style="background:${SEVERITY_COLORS[k]}"></span>${l} <strong>${nf.format(sev[k] || 0)}</strong></li>`).join("");
+    <li><span class="dsh-dot" style="background:${SEVERITY_COLORS[k]}"></span>${l} <strong>${nf.format(sev[k] || 0)}</strong></li>`).join("");
 });
