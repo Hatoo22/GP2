@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=70">
 </head>
 
 <body class="fullPage">
@@ -33,18 +33,38 @@
       </div>
     </nav>
 
-    <section class="hero dashHero homeHero animate">
-  <div class="heroContent">
-    <h1 id="welcomeName">Hello!</h1>
-    <div class="search">
-      <input id="homeSearch" placeholder="Search...">
-    </div>
-  </div>
+    <section class="spotHero" id="spotHero" aria-label="Games in the spotlight">
+      <div class="spot-media" aria-hidden="true">
+        <img class="spot-fallback" src="images/hero-dark.gif" alt="">
+        <img class="spot-poster" id="spotPoster" alt="">
+        <div class="spot-shots" id="spotShots"></div>
+        <video class="spot-video" id="spotVideo" muted playsinline loop preload="none"></video>
+      </div>
+      <div class="spot-shade" aria-hidden="true"></div>
+      <div class="spot-blur" aria-hidden="true"></div>
 
-  <div class="homeHeroImage">
-    <img src="images/hero-dark.gif" alt="Gaming hero animation">
-  </div>
-</section>
+      <div class="spot-top">
+        <h1 id="welcomeName">Hello!</h1>
+        <form class="spot-find" action="games.html" method="get" role="search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input name="q" placeholder="Search a game..." aria-label="Search a game" autocomplete="off">
+        </form>
+      </div>
+
+      <div class="spot-feature" id="spotFeature" aria-live="polite">
+        <p class="spot-kicker" id="spotKicker">Spotlight this week</p>
+        <h2 class="spot-name" id="spotName">&nbsp;</h2>
+        <div class="spot-risk">
+          <div class="spot-bar" id="spotBar" aria-hidden="true"></div>
+          <span class="spot-level" id="spotLevel"></span>
+        </div>
+        <div class="spot-actions">
+          <a class="btn spot-view" id="spotView" href="games.html">View details</a>
+        </div>
+      </div>
+
+      <ol class="spot-queue" id="spotQueue" aria-label="Up next"></ol>
+    </section>
 
     <section class="section">
       <h2>Dashboard</h2>
@@ -86,7 +106,7 @@
     </section>
 
     <section class="section">
-      <h2>Recent Games</h2>
+      <h2>Recent games</h2>
       <div class="marquee-wrap">
   <div class="cards marquee-track" id="recentGames"></div>
 </div>
@@ -105,9 +125,9 @@
 
   </main>
 
-  <script src="js/common.js?v=17"></script>
+  <script src="js/common.js?v=18"></script>
   <script src="js/marquee.js?v=7"></script>
-  <script src="js/home.js?v=0142"></script>
+  <script src="js/home.js?v=31"></script>
 </body>
 
 </html>

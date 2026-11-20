@@ -325,3 +325,245 @@ function startPicks(showcase) {
   window.addEventListener("resize", align);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(align);
 })();
+
+
+/* =========================================================
+   HERO: game HUD scan
+   Three real games (low / medium / high). Picking one runs a scan
+   across the screen, then the HUD shows its risk as a health bar and
+   the behaviors players run into as status tags. Dir'a reacts.
+   Rotates by itself until the visitor picks a game.
+   ========================================================= */
+(() => {
+  const screen = document.getElementById("hudScreen");
+  const slots = document.getElementById("hudSlots");
+  if (!screen || !slots) return;
+
+  const COLORS = { low: "#22c55e", medium: "#f59e0b", high: "#ef4444" };
+  const LABELS = [
+    ["bullying", "Bullying"], ["hate_speech", "Hate speech"], ["threat", "Threats"],
+    ["sexual_harassment", "Sexual harassment"], ["other_toxicity", "Other toxicity"]
+  ];
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const pct = (v) => (typeof diraPct === "function" ? diraPct(v) : `${Math.round(Number(v) || 0)}%`);
+
+  const bar = document.getElementById("hudBar");
+  bar.innerHTML = "<i></i>".repeat(10);
+
+  const video = document.getElementById("hudVideo");
+  const shotsBox = document.getElementById("hudShots");
+  const posterImg = document.getElementById("hudPoster");
+  let hls = null;
+  let shotTimer = null;
+  let mediaToken = 0;
+
+  // newer Steam trailers are HLS streams: Safari plays them, other browsers need hls.js
+  let hlsLib = null;
+  function loadHls() {
+    if (window.Hls) return Promise.resolve(window.Hls);
+    if (!hlsLib) {
+      hlsLib = new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js";
+        s.onload = () => resolve(window.Hls);
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    return hlsLib;
+  }
+
+  function stopMedia() {
+    clearInterval(shotTimer);
+    if (hls) { hls.destroy(); hls = null; }
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.classList.remove("is-on");
+    shotsBox.classList.remove("is-on");
+  }
+
+  function startShots(shots) {
+    if (!shots || !shots.length) return;
+    shotsBox.innerHTML = shots.map((u, n) => `<img src="${esc(u)}" alt=""${n === 0 ? ' class="is-on"' : ""}>`).join("");
+    shotsBox.classList.add("is-on");
+    let n = 0;
+    shotTimer = setInterval(() => {
+      const imgs = shotsBox.children;
+      imgs[n].classList.remove("is-on");
+      n = (n + 1) % imgs.length;
+      imgs[n].classList.add("is-on");
+    }, 3500);
+  }
+
+  async function playMedia(g) {
+    const token = ++mediaToken;
+    stopMedia();
+    const m = g.media || {};
+    // the game's still shows right away, so nothing else flashes while the clip loads
+    const still = m.poster || (m.shots && m.shots[0]) || "";
+    if (still) {
+      screen.classList.add("has-media");
+      posterImg.src = still;
+      posterImg.classList.add("is-on");
+    } else {
+      screen.classList.remove("has-media");
+      posterImg.classList.remove("is-on");
+    }
+    const skipIntro = () => { try { if (video.duration > 20) video.currentTime = 6; } catch (e) { /* ignore */ } };
+    const showVideo = () => { if (token === mediaToken) video.classList.add("is-on"); };
+
+    if (m.video) {
+      video.poster = m.poster || "";
+      video.addEventListener("loadedmetadata", skipIntro, { once: true });
+      video.addEventListener("playing", showVideo, { once: true });
+      try {
+        if (m.type === "hls") {
+          // hls.js wherever the browser supports it; plain src only where it doesn't (iPhone Safari)
+          const Hls = await loadHls().catch(() => null);
+          if (token !== mediaToken) return;
+          if (Hls && Hls.isSupported()) {
+            hls = new Hls({ capLevelToPlayerSize: true, startLevel: 0, maxBufferLength: 12 });
+            hls.loadSource(m.video);
+            hls.attachMedia(video);
+          } else {
+            video.src = m.video;
+          }
+        } else {
+          video.src = m.video;
+        }
+        // give up after a few seconds and fall back to screenshots
+        await Promise.race([
+          video.play(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("slow")), 8000))
+        ]);
+        return;
+      } catch (e) {
+        if (token !== mediaToken) return;
+        stopMedia();
+      }
+    }
+    startShots(m.shots); // no trailer: the game's screenshots, else the pixel art stays
+  }
+
+  let games = [];
+  let current = -1;
+  let timer = null;
+  let userPicked = false;
+
+  function react(level) {
+    try {
+      if (typeof clearHighTimers === "function") clearHighTimers();
+      highReactionRunning = false; // shared with guardian.js
+    } catch (e) { /* guardian.js not loaded */ }
+    if (typeof guardianIdle === "function") guardianIdle();
+    if (typeof guardianReact === "function") guardianReact(level);
+  }
+
+  function show(i) {
+    const g = games[i];
+    if (!g || i === current) return;
+    current = i;
+    slots.querySelectorAll(".hud-slot").forEach((b, n) => b.setAttribute("aria-selected", n === i ? "true" : "false"));
+
+    const color = COLORS[g.level] || COLORS.low;
+    screen.style.setProperty("--hud-c", color);
+    screen.classList.remove("is-scanning");
+    void screen.offsetWidth; // restart the scan
+    screen.classList.add("is-scanning");
+
+    setTimeout(() => {
+      document.getElementById("hudGame").textContent = g.name;
+      const thumb = document.getElementById("hudThumb");
+      if (g.image) thumb.src = g.image; else thumb.removeAttribute("src");
+
+      const filled = g.percent <= 0 ? 0 : Math.max(1, Math.ceil(g.percent / 10));
+      [...bar.children].forEach((seg, n) => seg.classList.toggle("on", n < filled));
+      document.getElementById("hudRisk").textContent = `RISK ${pct(g.percent)} · ${g.level.toUpperCase()}`;
+
+      const tags = document.getElementById("hudTags");
+      tags.innerHTML = g.behaviors.length
+        ? g.behaviors.map((b) => `<li style="--t:${b.value >= 70 ? COLORS.high : b.value >= 31 ? COLORS.medium : COLORS.low}">${esc(b.label)} <b>${pct(b.value)}</b></li>`).join("")
+        : `<li class="hud-clean">Clean community <b>✓</b></li>`;
+
+      screen.classList.remove("is-scanning");
+      react(g.level);
+      playMedia(g);
+    }, 520);
+  }
+
+  function rotate() {
+    clearInterval(timer);
+    if (userPicked || games.length < 2) return;
+    timer = setInterval(() => show((current + 1) % games.length), 6000);
+  }
+
+  function pick(i) {
+    userPicked = true;
+    clearInterval(timer);
+    show(i);
+  }
+
+  slots.addEventListener("click", (e) => {
+    const b = e.target.closest(".hud-slot");
+    if (b) pick(Number(b.dataset.i));
+  });
+  slots.addEventListener("mouseover", (e) => {
+    if (window.matchMedia("(hover: none)").matches) return;
+    const b = e.target.closest(".hud-slot");
+    if (b) pick(Number(b.dataset.i));
+  });
+  slots.addEventListener("keydown", (e) => {
+    if (!["ArrowRight", "ArrowLeft"].includes(e.key) || !games.length) return;
+    const n = (current + (e.key === "ArrowRight" ? 1 : games.length - 1)) % games.length;
+    pick(n);
+    slots.children[n].focus();
+  });
+
+  async function load() {
+    try {
+      const data = await fetch("api/main-home.php", { cache: "no-store" }).then((r) => r.json());
+      const showcase = (data && data.showcase) || [];
+      const details = await Promise.all(showcase.map((g) =>
+        fetch(`api/game-details.php?game_id=${encodeURIComponent(g.game_id)}`).then((r) => r.json()).catch(() => null)));
+      const media = await Promise.all(showcase.map((g) =>
+        fetch(`api/game-media.php?game_id=${encodeURIComponent(g.game_id)}`, { cache: "no-cache" }).then((r) => r.json()).catch(() => null)));
+
+      games = showcase.map((g, i) => {
+        const d = (details[i] && details[i].game) || {};
+        const total = Number(d.comments_count || g.comments_count || 0);
+        const behaviors = LABELS
+          .map(([k, label]) => ({ label, value: total > 0 ? (Number(d[k] || 0) / total) * 100 : 0 }))
+          .filter((b) => b.value > 0)
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 3);
+        return {
+          name: g.game_name,
+          image: g.image_url,
+          percent: Number(g.overall_risk_percent || 0),
+          level: String(g.overall_risk_level || "Low").toLowerCase(),
+          media: media[i] || null,
+          behaviors
+        };
+      });
+    } catch {
+      games = [];
+    }
+
+    if (!games.length) {
+      document.getElementById("hudGame").textContent = "Dir'a";
+      return;
+    }
+
+    slots.innerHTML = games.map((g, i) => `
+      <button type="button" class="hud-slot" role="tab" data-i="${i}" aria-selected="false" style="--c:${COLORS[g.level] || COLORS.low}">
+        ${g.image ? `<img src="${esc(g.image)}" alt="">` : ""}
+        <span><strong>${esc(g.name)}</strong><em>${pct(g.percent)} · ${g.level.charAt(0).toUpperCase() + g.level.slice(1)}</em></span>
+      </button>`).join("");
+
+    show(games.length - 1); // open on the high-risk one: the most telling scan
+    rotate();
+  }
+
+  load();
+})();

@@ -670,7 +670,7 @@ function handleSessionExpired(data) {
 (function loadNotifications() {
   if (document.querySelector('script[src*="js/notifications.js"]')) return;
   const s = document.createElement("script");
-  s.src = "js/notifications.js?v=2";
+  s.src = "js/notifications.js?v=3";
   s.defer = true;
   document.head.appendChild(s);
 })();

@@ -67,6 +67,7 @@
   /* ---------------- bell (players + employees) ---------------- */
   let state = { unread: 0, items: [], email: true };
   let open = false;
+  let signedOut = false;
 
   function bellButton() {
     const links = document.querySelector(".nav .links");
@@ -124,7 +125,14 @@
 
   async function refresh() {
     try {
-      const data = await fetch("api/notifications.php", { cache: "no-store" }).then((r) => r.json());
+      const res = await fetch("api/notifications.php", { cache: "no-store" });
+      if (res.status === 401) { // signed out on the server: no bell
+        signedOut = true;
+        const wrap = document.querySelector(".nav .bellWrap");
+        if (wrap) wrap.remove();
+        return;
+      }
+      const data = await res.json();
       if (!data.success) return;
       state = { unread: data.unread || 0, items: data.items || [], email: data.email !== false };
       render();
@@ -206,6 +214,10 @@
     loadNotice();
     const r = role();
     if (r !== "individual" && r !== "employee") return;
+    // only on signed-in pages (the top bar has "Log out"); the public pages keep Sign in / Register
+    const hasLogout = [...document.querySelectorAll(".nav .links a")]
+      .some((a) => a.classList.contains("logoutLink") || a.textContent.trim().toLowerCase() === "log out");
+    if (!hasLogout) return;
 
     bellButton();
     wireProfileSwitch();
@@ -215,7 +227,7 @@
     // pages that rebuild the menu (role, profile): put the bell back
     const links = document.querySelector(".nav .links");
     if (links && "MutationObserver" in window) {
-      new MutationObserver(() => { if (!links.querySelector(".bellWrap")) bellButton(); })
+      new MutationObserver(() => { if (!signedOut && !links.querySelector(".bellWrap")) bellButton(); })
         .observe(links, { childList: true });
     }
   }
