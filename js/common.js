@@ -39,14 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const savedTheme = localStorage.getItem('diraTheme');
+  // dark is the default; light only when the visitor picked it with the theme button
+  const savedTheme = localStorage.getItem('diraThemeChoice');
 
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-  } else {
+  if (savedTheme === 'light') {
     document.body.classList.remove('dark-mode');
     document.documentElement.classList.remove('dark-pre');
-    localStorage.setItem('diraTheme', 'light');
+  } else {
+    document.body.classList.add('dark-mode');
+    document.documentElement.classList.add('dark-pre');
   }
 
     const navAvatarMap = {
@@ -74,9 +75,9 @@ function toggleTheme() {
   document.documentElement.classList.toggle('dark-pre', document.body.classList.contains('dark-mode'));
 
   if (document.body.classList.contains('dark-mode')) {
-    localStorage.setItem('diraTheme', 'dark');
+    localStorage.setItem('diraThemeChoice', 'dark');
   } else {
-    localStorage.setItem('diraTheme', 'light');
+    localStorage.setItem('diraThemeChoice', 'light');
   } 
 
   updateThemeIcon();
@@ -669,7 +670,7 @@ function handleSessionExpired(data) {
 (function loadNotifications() {
   if (document.querySelector('script[src*="js/notifications.js"]')) return;
   const s = document.createElement("script");
-  s.src = "js/notifications.js?v=1";
+  s.src = "js/notifications.js?v=2";
   s.defer = true;
   document.head.appendChild(s);
 })();
