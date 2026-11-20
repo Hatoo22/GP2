@@ -4,6 +4,7 @@
 //   GET  ?action=count                         -> how many games "new" and "all" would process
 //   GET  ?action=list&mode=one|new|all[&game_id=] -> the games to process, in order
 //   POST {action:"run", game_id, refresh?}     -> analyze one game and save its score
+//   POST {action:"finish"}                     -> run ended: send the grouped "became high risk" emails
 //
 // For each game the AI service (Hugging Face Space, hf-space/app.py) fetches the
 // Steam reviews and YouTube comments and runs the model on them. The Space
@@ -13,6 +14,7 @@ require_once __DIR__ . '/admin-auth.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/ai-client.php';
 require_once __DIR__ . '/report-score.php';
+require_once __DIR__ . '/notify.php';
 header('Content-Type: application/json; charset=utf-8');
 
 function out($data, $code = 200) { http_response_code($code); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
@@ -78,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     if ($action === 'list') {
+        dira_send_risk_emails($conn); // anything left from a run that was closed early
         $mode = $_GET['mode'] ?? '';
         if ($mode === 'one') {
             $gid = (int)($_GET['game_id'] ?? 0);
@@ -101,10 +104,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') out(['success' => false, 'message' => 'Method not allowed.'], 405);
 
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
+if (($input['action'] ?? '') === 'finish') {
+    $sent = dira_send_risk_emails($conn);
+    out(['success' => true, 'emails' => $sent]);
+}
 if (($input['action'] ?? '') !== 'run') out(['success' => false, 'message' => 'Unknown action.'], 400);
 
 $gameId = (int)($input['game_id'] ?? 0);
-$st = $conn->prepare("SELECT game_id, api_game_id, game_name FROM games WHERE game_id = ? LIMIT 1");
+$st = $conn->prepare("SELECT game_id, api_game_id, game_name, overall_risk_level, analysis_status FROM games WHERE game_id = ? LIMIT 1");
 $st->bind_param('i', $gameId);
 $st->execute();
 $game = $st->get_result()->fetch_assoc();
@@ -165,6 +172,10 @@ $ok = $st->execute();
 $st->close();
 if (!$ok) out(['success' => false, 'game_name' => $name, 'message' => 'Could not save the result.'], 500);
 
+// tell the people who follow this game if its level changed (emails go out when the run finishes)
+$oldLevel = ($game['analysis_status'] ?? '') === 'analyzed' ? $game['overall_risk_level'] : '';
+$notified = dira_notify_risk_change($conn, $gameId, $oldLevel, $level, (float)$overall);
+
 out(['success' => true, 'status' => 'analyzed', 'game_name' => $name,
-     'overall' => $overall, 'level' => $level, 'comments' => $total,
+     'overall' => $overall, 'level' => $level, 'comments' => $total, 'notified' => $notified,
      'message' => "$found from Steam/YouTube + $extraN from Dir'a → " . round($overall) . "% ($level)"]);

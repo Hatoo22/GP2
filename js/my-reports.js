@@ -40,7 +40,7 @@
   }
 
   function formatDate(d) {
-    const date = new Date(String(d).replace(" ", "T"));
+    const date = diraDate(d);
     if (isNaN(date)) return "";
     return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }

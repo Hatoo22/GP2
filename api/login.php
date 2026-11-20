@@ -154,7 +154,7 @@ if ($status === 'disabled') {
 
     if (
         $disabledUntil &&
-        strtotime($disabledUntil) <= time()
+        strtotime($disabledUntil . " UTC") <= time()
     ) {
 
         $reactivate =
@@ -191,7 +191,7 @@ if ($status === 'disabled') {
             $formattedDate =
                 date(
                     'd M Y, h:i A',
-                    strtotime($disabledUntil)
+                    strtotime($disabledUntil . " UTC")
                 );
 
             $message =

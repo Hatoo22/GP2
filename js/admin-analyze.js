@@ -160,6 +160,9 @@
       }
     }
 
+    // send the grouped "a game you follow became high risk" emails
+    await api("POST", "", { action: "finish" });
+
     running = false;
     const summary = `${nf.format(r.analyzed)} analyzed · ${nf.format(r.no_comments)} without comments` +
       (r.skipped ? ` · ${nf.format(r.skipped)} skipped` : "") + (r.failed ? ` · ${nf.format(r.failed)} failed` : "");

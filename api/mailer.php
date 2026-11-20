@@ -96,7 +96,7 @@ function dira_send_mail(string $toEmail, string $toName, string $subject, string
 }
 
 // Branded email layout in Dir'a's dark theme (black + orange)
-function dira_mail_layout(string $title, string $intro, string $buttonText, string $url, string $note): string {
+function dira_mail_layout(string $title, string $intro, string $buttonText, string $url, string $note, string $extraHtml = ''): string {
     $e = fn($s) => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
     return '<!doctype html><html><head><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>'
       . '<body style="margin:0;padding:0;background:#0d0d0c;font-family:Arial,Helvetica,sans-serif;color:#f5f5f4">'
@@ -105,6 +105,7 @@ function dira_mail_layout(string $title, string $intro, string $buttonText, stri
       . '<tr><td style="font-size:22px;font-weight:bold;color:#ff9d3d;padding-bottom:22px;letter-spacing:0.5px">Dir\'a</td></tr>'
       . '<tr><td style="font-size:21px;font-weight:bold;color:#f5f5f4;padding-bottom:12px">' . $e($title) . '</td></tr>'
       . '<tr><td style="font-size:15px;line-height:1.65;color:#d6d3d1;padding-bottom:26px">' . $e($intro) . '</td></tr>'
+      . ($extraHtml !== '' ? '<tr><td style="padding-bottom:26px">' . $extraHtml . '</td></tr>' : '')
       . '<tr><td style="padding-bottom:26px"><a href="' . $e($url) . '" style="display:inline-block;background:#ff9d3d;color:#1a0f05;text-decoration:none;font-weight:bold;padding:13px 28px;border-radius:999px">' . $e($buttonText) . '</a></td></tr>'
       . '<tr><td style="font-size:13px;line-height:1.6;color:#a8a29e;border-top:1px solid #2a241e;padding-top:18px">' . $e($note) . '</td></tr>'
       . '<tr><td style="font-size:12px;line-height:1.5;color:#78716c;padding-top:14px;word-break:break-all">If the button doesn\'t work, copy this link:<br><a href="' . $e($url) . '" style="color:#ff9d3d">' . $e($url) . '</a></td></tr>'

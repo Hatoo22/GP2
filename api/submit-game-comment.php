@@ -138,7 +138,8 @@ $conn->begin_transaction();
 
 try {
     $stmt = $conn->prepare(
-        'SELECT threat, bullying, sexual_harassment, hate_speech, other_toxicity, comments_count
+        'SELECT threat, bullying, sexual_harassment, hate_speech, other_toxicity, comments_count,
+                overall_risk_level, analysis_status
          FROM games WHERE game_id = ? LIMIT 1 FOR UPDATE'
     );
     $stmt->bind_param('i', $gameId);
@@ -209,6 +210,13 @@ try {
 } catch (Throwable $e) {
     $conn->rollback();
     respond(500, ['success' => false, 'message' => $e->getMessage()]);
+}
+
+// tell the people who follow this game if its level changed (after the commit: it may create tables)
+require_once __DIR__ . '/notify.php';
+$oldLevel = ($game['analysis_status'] ?? '') === 'analyzed' ? ($game['overall_risk_level'] ?? '') : '';
+if (dira_notify_risk_change($conn, $gameId, $oldLevel, $level, (float)$overall) > 0) {
+    dira_send_risk_emails($conn);
 }
 
 respond(200, [

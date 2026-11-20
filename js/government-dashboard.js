@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function timeAgo(value) {
     if (!value) return "";
-    const d = new Date(String(value).replace(" ", "T"));
+    const d = diraDate(value);
     if (isNaN(d)) return "";
     const s = Math.floor((Date.now() - d.getTime()) / 1000);
     if (s < 3600) return `${Math.max(1, Math.floor(s / 60))}m ago`;

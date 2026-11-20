@@ -16,5 +16,7 @@ if (!isset($conn) || !($conn instanceof mysqli)) {
         die("Database connection failed: " . $conn->connect_error);
     }
     $conn->set_charset("utf8mb4");
+    // times are kept in UTC everywhere (Railway runs in UTC); the pages show them in the visitor's time
+    $conn->query("SET time_zone = '+00:00'");
 }
 ?>

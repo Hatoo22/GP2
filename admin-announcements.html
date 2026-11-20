@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Announcements | DIR'A Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css?v=61">
+  <style>html.admin-checking body{visibility:hidden}</style>
+  <script src="js/admin-guard.js"></script>
+</head>
+
+
+<body class="fullPage">
+
+    <script>if(document.documentElement.classList.contains('dark-pre'))document.body.classList.add('dark-mode')</script>
+<main class="page">
+
+
+    <!-- =========================
+         NAV
+    ========================== -->
+
+    <nav class="nav">
+
+      <a href="admin-dashboard.html" class="logo logo-switch">
+
+        <img
+          src="images/black-logo.png"
+          class="logo-light"
+          alt="DIR'A Logo"
+        >
+
+        <img
+          src="images/white-logo.png"
+          class="logo-dark"
+          alt="DIR'A Logo"
+        >
+
+      </a>
+
+
+      <div class="links">
+
+        <a href="admin-dashboard.html">
+          Dashboard
+        </a>
+
+        <a href="admin-games.html">
+          Games
+        </a>
+
+        <a href="admin-users.html">
+          Users
+        </a>
+
+        <a href="admin-complaints.html">Complaints</a>
+        <a href="admin-suggestions.html">Suggestions</a>
+        <a href="admin-announcements.html" class="active">Announcements</a>
+
+        <a
+          class="btn"
+          href="main-home.html"
+        >
+          Log Out
+        </a>
+
+        <button
+          onclick="toggleTheme()"
+          class="icon"
+          type="button"
+        >
+          🌙
+        </button>
+
+        <a class="icon profileIcon" href="profile.html" aria-label="My profile">👤</a>
+
+      </div>
+
+    </nav>
+
+
+
+    <!-- =========================
+         COMPLAINTS MANAGEMENT
+    ========================== -->
+    <section class="section adminDash agPage auPage anPage">
+
+      <div class="dsh-head">
+        <div>
+          <p class="dsh-eyebrow">ADMIN / ANNOUNCEMENTS</p>
+          <h1>Announcements</h1>
+          <p class="mini">Tell players and employees about new features, maintenance or news. It shows up in their bell.</p>
+        </div>
+      </div>
+
+      <div class="an-layout">
+        <article class="dsh-card an-compose">
+          <h2>New announcement</h2>
+          <form id="annForm" novalidate>
+            <fieldset class="an-types">
+              <legend>Type</legend>
+              <label><input type="radio" name="annType" value="feature" checked><span>New feature</span></label>
+              <label><input type="radio" name="annType" value="maintenance"><span>Maintenance</span></label>
+              <label><input type="radio" name="annType" value="info"><span>News</span></label>
+            </fieldset>
+
+            <div class="field">
+              <label for="annTitle">Title</label>
+              <input id="annTitle" maxlength="120" placeholder="e.g. You can now compare up to 4 games" required>
+            </div>
+
+            <div class="field">
+              <label for="annBody">Message <span class="mini">(optional)</span></label>
+              <textarea id="annBody" maxlength="600" rows="3" placeholder="A short line with the details"></textarea>
+            </div>
+
+            <div class="field" id="annAudienceField">
+              <label for="annAudience">Who should see it</label>
+              <select id="annAudience">
+                <option value="all">Everyone (players and employees)</option>
+                <option value="individual">Players only</option>
+                <option value="employee">Employees only</option>
+              </select>
+            </div>
+
+            <div class="field" id="annEndsField" hidden>
+              <label for="annEnds">Maintenance ends</label>
+              <input type="datetime-local" id="annEnds">
+              <p class="mini">Everyone sees a banner at the top of the site until then, even visitors who aren't logged in.</p>
+            </div>
+
+            <label class="an-check"><input type="checkbox" id="annEmail"> Also send it by email</label>
+
+            <p class="an-msg" id="annMsg" role="status"></p>
+            <button class="btn" type="submit" id="annSend">Send announcement</button>
+          </form>
+        </article>
+
+        <article class="dsh-card an-history">
+          <h2>Sent</h2>
+          <ul class="an-list" id="annList">
+            <li class="dsh-empty">Loading…</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+</main>
+
+
+  <script src="js/common.js?v=15"></script>
+  <script src="js/admin-announcements.js?v=1"></script>
+
+</body>
+
+</html>
