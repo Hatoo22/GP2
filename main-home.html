@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="guardian.css?v=7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-    <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="style.css?v=70">
 </head>
 
 <body class="fullPage mainHome">
@@ -30,42 +30,57 @@
         <section class="mh mh-hero" aria-labelledby="mhTitle">
           <div class="mh-hero-copy">
             <h1 id="mhTitle">Know how safe a game's community is before anyone hits play.</h1>
+            <p class="hud-lead">Dir'a reads what players say about a game and turns it into one clear risk score, so you know what to expect before you join.</p>
             <div class="mh-actions">
               <a class="btn" href="signup.html">Create a free account</a>
               <a class="mh-ghost" href="#how">See how it works</a>
             </div>
           </div>
 
-          <div class="mh-stage">
-            <div class="mh-screen">
-              <img src="images/main-hero-dark.gif" alt="" class="mh-screen-img">
-              <div class="mh-scanline" aria-hidden="true"></div>
+          <div class="mh-stage hud-stage">
+            <div class="hud-screen" id="hudScreen">
+              <img src="images/main-hero-dark.gif" alt="" class="hud-img">
+              <img class="hud-poster" id="hudPoster" alt="" aria-hidden="true">
+              <div class="hud-shots" id="hudShots" aria-hidden="true"></div>
+              <video class="hud-video" id="hudVideo" muted playsinline loop preload="none" aria-hidden="true"></video>
+              <div class="hud-scan" aria-hidden="true"></div>
+
+              <div class="hud-panel" aria-live="polite">
+                <div class="hud-panel-top">
+                  <img class="hud-thumb" id="hudThumb" alt="">
+                  <span class="hud-game" id="hudGame">Loading…</span>
+                </div>
+                <div class="hud-bar" id="hudBar" aria-hidden="true"></div>
+                <span class="hud-risk" id="hudRisk">&nbsp;</span>
+              </div>
+
+              <ul class="hud-tags" id="hudTags" aria-label="What players run into"></ul>
             </div>
 
-            <div id="dirGuardian" class="dir-guardian mh-guardian" aria-hidden="true">
-              <div class="guardian-symbol" id="guardianSymbol"></div>
-              <div class="guardian-body-wrap">
-                <div class="guardian-shadow"></div>
-                <div class="guardian-neck"></div>
-                <div class="guardian-head-wrap">
-                  <div class="guardian-head">
-                    <div class="guardian-ear guardian-ear-left"></div>
-                    <div class="guardian-ear guardian-ear-right"></div>
-                    <div class="guardian-face">
-                      <span class="guardian-eye guardian-eye-left"></span>
-                      <span class="guardian-eye guardian-eye-right"></span>
+            <div class="hud-dock">
+              <div class="hud-botbox">
+                <div id="dirGuardian" class="dir-guardian hud-bot" aria-hidden="true">
+                  <div class="guardian-symbol" id="guardianSymbol"></div>
+                  <div class="guardian-body-wrap">
+                    <div class="guardian-shadow"></div>
+                    <div class="guardian-neck"></div>
+                    <div class="guardian-head-wrap">
+                      <div class="guardian-head">
+                        <div class="guardian-ear guardian-ear-left"></div>
+                        <div class="guardian-ear guardian-ear-right"></div>
+                        <div class="guardian-face">
+                          <span class="guardian-eye guardian-eye-left"></span>
+                          <span class="guardian-eye guardian-eye-right"></span>
+                        </div>
+                      </div>
                     </div>
+                    <div class="guardian-body"></div>
+                    <div class="guardian-arm guardian-arm-left"></div>
+                    <div class="guardian-arm guardian-arm-right"></div>
                   </div>
                 </div>
-                <div class="guardian-body"></div>
-                <div class="guardian-arm guardian-arm-left"></div>
-                <div class="guardian-arm guardian-arm-right"></div>
               </div>
-            </div>
-
-            <div class="mh-picks" id="mhPicks">
-              <div class="mh-picks-list" id="mhPicksList"></div>
-              <p class="mh-picks-hint">Point at a game to see how Dir'a reacts</p>
+              <div class="hud-slots" id="hudSlots" role="tablist" aria-label="Pick a game to scan"></div>
             </div>
           </div>
         </section>
@@ -224,10 +239,10 @@
 </p>
         </footer>
     </main>
-    <script src="js/common.js?v=17"></script>
+    <script src="js/common.js?v=18"></script>
   <script src="js/marquee.js?v=7"></script>
     <script src="js/guardian.js?v=2"></script>
-    <script src="js/main-home.js?v=0142"></script>
+    <script src="js/main-home.js?v=22"></script>
 </body>
 
 </html>

@@ -342,6 +342,12 @@ if (sortFilter) {
 async function initializeGamesPage() {
   await loadTrackedGames();
   await loadGames();
+  // search sent from the home page: games.html?q=...
+  const q = new URLSearchParams(location.search).get("q");
+  if (q && searchInput) {
+    searchInput.value = q;
+    applyFilters();
+  }
 }
 
 function showToast(message) {
