@@ -119,7 +119,7 @@
               </${tag}>
             </li>`;
         }).join("")
-      : `<li class="bellEmpty">You're all caught up. Changes to games in your list and news from Dir'a will show up here.</li>`;
+      : `<li class="bellEmpty">You're all caught up. Changes to games in your list and news from Dir'a show up here for 30 days.</li>`;
   }
 
   async function refresh() {

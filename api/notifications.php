@@ -4,6 +4,9 @@
 //   POST {action:"read", id}              -> mark one as read
 //   POST {action:"read_all"}              -> mark all as read
 //   POST {action:"email", on: true|false} -> turn the "game became high risk" emails on/off
+//
+// Like most apps, notifications last 30 days: the bell shows the last 30 days
+// and older ones are deleted, read or not.
 require_once __DIR__ . '/session.php';
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/config.php';
@@ -18,9 +21,17 @@ if (!in_array($role, ['individual', 'employee'], true)) out(['success' => true, 
 
 dira_notify_ensure($conn);
 
+const DIRA_BELL_DAYS = 30;
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // tidy up now and then (cheap, no scheduled job needed)
+    if (mt_rand(1, 20) === 1) {
+        $conn->query("DELETE FROM notifications
+            WHERE created_at < NOW() - INTERVAL " . DIRA_BELL_DAYS . " DAY");
+    }
+
     $st = $conn->prepare("SELECT id, type, title, body, link, is_read, UNIX_TIMESTAMP(created_at) AS ts
-        FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT 20");
+        FROM notifications WHERE user_id = ? AND created_at > NOW() - INTERVAL " . DIRA_BELL_DAYS . " DAY ORDER BY id DESC LIMIT 20");
     $st->bind_param('i', $uid);
     $st->execute();
     $items = $st->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -28,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     foreach ($items as &$it) { $it['id'] = (int)$it['id']; $it['ts'] = (int)$it['ts']; $it['is_read'] = (int)$it['is_read'] === 1; }
     unset($it);
 
-    $st = $conn->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+    $st = $conn->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0 AND created_at > NOW() - INTERVAL " . DIRA_BELL_DAYS . " DAY");
     $st->bind_param('i', $uid);
     $st->execute();
     $unread = (int)$st->get_result()->fetch_row()[0];

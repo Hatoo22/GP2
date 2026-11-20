@@ -3,14 +3,14 @@
 
 <head>
   <meta charset="UTF-8">
-  <script>try{if(localStorage.getItem('diraTheme')==='dark')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+  <script>try{if(localStorage.getItem('diraThemeChoice')!=='light')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
   <style>html.dark-pre{background:#0d0d0c;color-scheme:dark}</style>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Home</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css?v=61">
+  <link rel="stylesheet" href="style.css?v=62">
 </head>
 
 <body class="fullPage">
@@ -47,32 +47,41 @@
 </section>
 
     <section class="section">
-      <h2>DashBoard</h2>
+      <h2>Dashboard</h2>
 
-      <div class="dashStats">
-        <div class="dashBox">
-          <span class="pill">Tracked Games</span>
-          <h2><span id="trackedCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3"/><path d="M5.5 12.5h3"/><circle cx="15.5" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13.5" r=".6" fill="currentColor"/></svg></span></h2>
-          <p class="mini">Number of games you followed</p>
+      <div class="dashStats homeStats">
+        <div class="dashBox hs-card">
+          <div class="hs-top">
+            <span class="hs-label">Tracked games</span>
+            <span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3"/><path d="M5.5 12.5h3"/><circle cx="15.5" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13.5" r=".6" fill="currentColor"/></svg></span>
+          </div>
+          <strong class="hs-num" id="trackedCount">0</strong>
+          <p class="mini">Games in your list</p>
         </div>
-
-        <div class="dashBox">
-          <span class="pill">Active Alerts</span>
-          <h2><span id="alertsCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></h2>
-          <p class="mini">Number of high-risk games</p>
+        <div class="dashBox hs-card">
+          <div class="hs-top">
+            <span class="hs-label">Active alerts</span>
+            <span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+          </div>
+          <strong class="hs-num" id="alertsCount">0</strong>
+          <p class="mini">High-risk games in your list</p>
         </div>
-
-        <div class="dashBox">
-          <span class="pill">Complaints Under Review</span>
-          <h2><span id="reportsReviewCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></h2>
-          <p class="mini">Complaints an employee is reviewing</p>
+        <div class="dashBox hs-card">
+          <div class="hs-top">
+            <span class="hs-label">Complaints under review</span>
+            <span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          </div>
+          <strong class="hs-num" id="reportsReviewCount">0</strong>
+          <p class="mini">Being looked at by an employee</p>
         </div>
-
-        <div class="dashBox">
-  <span class="pill">Submitted Complaints</span>
-  <h2><span id="submittedReportsCount">0</span><span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span></h2>
-  <p class="mini">Complaints you sent</p>
-</div>
+        <div class="dashBox hs-card">
+          <div class="hs-top">
+            <span class="hs-label">Submitted complaints</span>
+            <span class="dash-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span>
+          </div>
+          <strong class="hs-num" id="submittedReportsCount">0</strong>
+          <p class="mini">Complaints you sent</p>
+        </div>
       </div>
     </section>
 
@@ -96,7 +105,7 @@
 
   </main>
 
-  <script src="js/common.js?v=15"></script>
+  <script src="js/common.js?v=17"></script>
   <script src="js/marquee.js?v=7"></script>
   <script src="js/home.js?v=0142"></script>
 </body>
