@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function timeAgo(value) {
     if (!value) return "";
-    const d = new Date(String(value).replace(" ", "T"));
+    const d = diraDate(value);
     if (isNaN(d)) return "";
     const s = Math.floor((Date.now() - d.getTime()) / 1000);
     if (s < 60) return "just now";

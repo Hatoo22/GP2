@@ -1,3 +1,15 @@
+/* database times are saved in UTC (api/config.php sets the connection to UTC);
+   this reads them as UTC so "2h ago" and dates show in the visitor's own time */
+function diraDate(value) {
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value * 1000);
+  const s = String(value || "").trim();
+  if (!s) return new Date(NaN);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + "T00:00:00");
+  if (/[zZ]$|[+-]\d{2}:?\d{2}$/.test(s)) return new Date(s.replace(" ", "T"));
+  return new Date(s.replace(" ", "T") + "Z");
+}
+
 /* one way to show a risk percent everywhere: whole numbers, "<1%" for tiny values */
 function diraPct(value) {
   const v = Number(value || 0);
@@ -371,6 +383,10 @@ function applyRoleNavigation() {
       Suggestions
     </a>
 
+    <a href="admin-announcements.html">
+      Announcements
+    </a>
+
     <a
       class="btn logoutLink"
       href="#"
@@ -647,4 +663,13 @@ function handleSessionExpired(data) {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
   else build();
+})();
+
+/* the bell, the maintenance banner and the profile email switch live in their own file */
+(function loadNotifications() {
+  if (document.querySelector('script[src*="js/notifications.js"]')) return;
+  const s = document.createElement("script");
+  s.src = "js/notifications.js?v=1";
+  s.defer = true;
+  document.head.appendChild(s);
 })();

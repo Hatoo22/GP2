@@ -13,7 +13,7 @@
   const nf = new Intl.NumberFormat("en-US");
 
   function timeAgo(v) {
-    const d = new Date(String(v).replace(" ", "T"));
+    const d = diraDate(v);
     if (isNaN(d)) return "";
     const s = (Date.now() - d) / 1000;
     if (s < 60) return "just now";

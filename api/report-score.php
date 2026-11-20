@@ -67,7 +67,7 @@ function dira_report_sync_score(mysqli $conn, int $reportId): string {
         $sign = $should ? 1 : -1;
         $gameId = (int)$r['game_id'];
 
-        $gs = $conn->prepare("SELECT threat, bullying, sexual_harassment, hate_speech, other_toxicity, comments_count FROM games WHERE game_id = ? LIMIT 1 FOR UPDATE");
+        $gs = $conn->prepare("SELECT threat, bullying, sexual_harassment, hate_speech, other_toxicity, comments_count, overall_risk_level, analysis_status FROM games WHERE game_id = ? LIMIT 1 FOR UPDATE");
         $gs->bind_param('i', $gameId);
         $gs->execute();
         $g = $gs->get_result()->fetch_assoc();
@@ -103,6 +103,13 @@ function dira_report_sync_score(mysqli $conn, int $reportId): string {
         $rf->close();
 
         $conn->commit();
+
+        // tell the people who follow this game if its level changed (after the commit: it may create tables)
+        require_once __DIR__ . '/notify.php';
+        $oldLevel = ($g['analysis_status'] ?? '') === 'analyzed' ? ($g['overall_risk_level'] ?? '') : '';
+        if (dira_notify_risk_change($conn, $gameId, $oldLevel, $level, (float)$overall) > 0) {
+            dira_send_risk_emails($conn);
+        }
         return $should ? 'added' : 'removed';
     } catch (Throwable $e) {
         $conn->rollback();

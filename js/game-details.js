@@ -174,7 +174,7 @@ function riskLevelOf(v) {
 
 function formatAnalyzedDate(value) {
   if (!value) return "—";
-  const d = new Date(String(value).replace(" ", "T"));
+  const d = diraDate(value);
   if (isNaN(d)) return value;
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }

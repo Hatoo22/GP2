@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatDate(value, withTime = false) {
     if (!value) return "—";
-    const date = new Date(String(value).replace(" ", "T"));
+    const date = diraDate(value);
     if (isNaN(date)) return value;
     const opts = { day: "2-digit", month: "short", year: "numeric" };
     if (withTime) Object.assign(opts, { hour: "2-digit", minute: "2-digit" });

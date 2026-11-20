@@ -161,7 +161,7 @@ sendAdminInvite.addEventListener(
 
   function formatDate(value) {
     if (!value) return "—";
-    const date = new Date(String(value).replace(" ", "T"));
+    const date = diraDate(value);
     if (isNaN(date)) return value;
     return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   }

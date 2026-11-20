@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css?v=59">
+  <link rel="stylesheet" href="style.css?v=61">
 </head>
 
 <body class="fullPage">
@@ -82,6 +82,17 @@
         <p id="profileMessage" class="mini"></p>
 
         <!-- Danger zone (individual accounts only) -->
+        <div class="notifyPrefs" id="notifyPrefs" hidden>
+          <div>
+            <strong>Email me about my games</strong>
+            <p class="mini" id="notifyEmailNote">Get an email when a game in your list becomes high risk. Everything else shows up in the bell.</p>
+          </div>
+          <label class="notifySwitch">
+            <input type="checkbox" id="notifyEmail" aria-label="Email me when a game in my list becomes high risk">
+            <span></span>
+          </label>
+        </div>
+
         <div class="dangerZone" id="dangerZone" hidden>
           <div>
             <strong>Delete account</strong>
@@ -152,8 +163,8 @@
 
 <div id="toast" class="toast"></div>
 
-  <script src="js/common.js?v=13"></script>
-  <script src="js/profile.js?v=3"></script>
+  <script src="js/common.js?v=15"></script>
+  <script src="js/profile.js?v=4"></script>
 
 </body>
 

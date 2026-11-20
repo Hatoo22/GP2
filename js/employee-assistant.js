@@ -33,7 +33,7 @@
     return v === "reviewing" ? "Reviewing" : v === "resolved" ? "Resolved" : "Pending";
   };
   const sev = (c) => String(c.severity || "").toLowerCase();
-  const dateOf = (c) => new Date(String(c.date_reported || "").replace(" ", "T"));
+  const dateOf = (c) => diraDate(c.date_reported || "");
   const daysAgo = (d) => Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
 
   function countBy(list, fn) {
