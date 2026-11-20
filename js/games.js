@@ -22,7 +22,7 @@ function card(game) {
   data-risk="${isNew ? "new" : String(game.overall_risk_level || "Low").toLowerCase()}"
 >
       <div class="top-pills">
-        ${isNew ? "" : `<span class="pill">${game.overall_risk_percent ?? 0}% Risk</span>`}
+        ${isNew ? "" : `<span class="pill">${diraPct(game.overall_risk_percent)} Risk</span>`}
         <span class="pill ${isNew ? "new-pill" : riskClass}">
   ${isNew ? "New" : (game.overall_risk_level ?? "Low")}
 </span>

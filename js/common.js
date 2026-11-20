@@ -1,3 +1,11 @@
+/* one way to show a risk percent everywhere: whole numbers, "<1%" for tiny values */
+function diraPct(value) {
+  const v = Number(value || 0);
+  if (v <= 0) return "0%";
+  if (v < 1) return "<1%";
+  return `${Math.round(Math.min(v, 100))}%`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -614,4 +622,29 @@ function handleSessionExpired(data) {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
+})();
+
+/* =========================================================
+   FOOTER: same simple footer on every page - logo, a
+   contact line for support, and one line about the project.
+   ========================================================= */
+(function siteFooter() {
+  function build() {
+    document.querySelectorAll(".footer").forEach((footer) => {
+      const logo = footer.querySelector(".footer-logo");
+      [...footer.children].forEach((el) => { if (el !== logo) el.remove(); });
+
+      const contact = document.createElement("p");
+      contact.className = "footerContact";
+      contact.innerHTML = 'Questions or feedback? <a href="mailto:dira.mrhn@gmail.com">dira.mrhn@gmail.com</a>';
+
+      const note = document.createElement("p");
+      note.className = "footerNote";
+      note.textContent = `© ${new Date().getFullYear()} Dir'a · Graduation project`;
+
+      footer.append(contact, note);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
+  else build();
 })();

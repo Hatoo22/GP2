@@ -164,7 +164,7 @@ function dira_spam_score($conn, array $r, $useModel = true) {
 }
 
 /**
- * Model 2: pretrained spam classifier on the AI service (POST /spam-check).
+ * Model 2: pretrained spam classifier on the AI service (Space endpoint "spam").
  * Returns up to 60 points when the model thinks the text is spam.
  * Fails quietly (0 points) if the service isn't configured or doesn't answer in time.
  */
@@ -174,36 +174,13 @@ function dira_spam_model_score($text) {
     $text = trim((string)$text);
     if ($unavailable || mb_strlen($text) < 8) return $none;
 
-    $base = getenv('AI_API_URL') ?: '';
-    $token = getenv('ADMIN_TASK_TOKEN') ?: '';
-    $local = __DIR__ . '/mail-config.local.php';
-    if (($base === '' || $token === '') && is_file($local)) {
-        $cfg = include $local;
-        if (is_array($cfg)) {
-            $base = $base ?: ($cfg['ai_api_url'] ?? '');
-            $token = $token ?: ($cfg['admin_task_token'] ?? '');
-        }
-    }
-    $base = rtrim((string)$base, '/');
-    if ($base === '') { $unavailable = true; return $none; }
+    require_once __DIR__ . '/ai-client.php';
+    if (dira_ai_base() === '') { $unavailable = true; return $none; }
 
-    $ch = curl_init($base . '/spam-check');
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT        => 8,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'X-Admin-Token: ' . $token],
-        CURLOPT_POSTFIELDS     => json_encode(['text' => mb_substr($text, 0, 1000)]),
-    ]);
-    if (is_file(__DIR__ . '/cacert.pem')) curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
-    $body = curl_exec($ch);
-    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    $data = $body ? json_decode($body, true) : null;
-    if ($code !== 200 || !is_array($data) || !isset($data['spam_probability'])) {
-        $unavailable = true;
+    // Model 2 on the AI service (Hugging Face Space, endpoint "spam")
+    $data = dira_ai_call('spam', [mb_substr($text, 0, 1000)], 8);
+    if (empty($data['success']) || !isset($data['spam_probability'])) {
+        $unavailable = true;   // don't keep waiting on it for the other complaints in this request
         return $none;
     }
 

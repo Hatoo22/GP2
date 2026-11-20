@@ -275,7 +275,7 @@ sendAdminInvite.addEventListener(
 
     tableBody.innerHTML = slice.length
       ? slice.map(rowHtml).join("")
-      : `<tr><td colspan="4" class="ad-empty">No users found.</td></tr>`;
+      : `<tr><td colspan="4" class="dsh-empty">No users found.</td></tr>`;
 
     showing.textContent = list.length
       ? `Showing ${start + 1}–${start + slice.length} of ${nf.format(list.length)} users`
@@ -316,7 +316,7 @@ sendAdminInvite.addEventListener(
      LOAD
   ========================================= */
   async function loadUsers(role) {
-    tableBody.innerHTML = `<tr><td colspan="4" class="ad-empty">Loading users…</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="4" class="dsh-empty">Loading users…</td></tr>`;
     showing.textContent = "";
     pager.innerHTML = "";
     try {
@@ -330,7 +330,7 @@ sendAdminInvite.addEventListener(
       console.error(error);
       users = [];
       updateStatusCounts();
-      tableBody.innerHTML = `<tr><td colspan="4" class="ad-empty">Unable to load users.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="4" class="dsh-empty">Unable to load users.</td></tr>`;
     }
   }
 

@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css?v=56">
+  <link rel="stylesheet" href="style.css?v=59">
   <style>html.employee-checking body{visibility:hidden}</style>
   <script src="js/employee-guard.js"></script>
 </head>
@@ -49,78 +49,78 @@
     ========================================== -->
     <section class="section adminDash gdPage">
 
-      <div class="ad-head">
+      <div class="dsh-head">
         <div>
-          <p class="ad-eyebrow">GOVERNMENT EMPLOYEE</p>
+          <p class="dsh-eyebrow">GOVERNMENT EMPLOYEE</p>
           <h1 id="adGreeting">Welcome back</h1>
           <p class="mini">Complaints and game risks that need your attention.</p>
         </div>
-        <div class="ad-date" id="adToday"></div>
+        <div class="dsh-date" id="adToday"></div>
       </div>
 
       <!-- KPI band -->
-      <div class="ad-kpis">
-        <a class="ad-kpi" href="employee-complaints.html?status=Pending">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M7 2v4a5 5 0 0 0 10 0V2"/><path d="M7 22v-4a5 5 0 0 1 10 0v4"/></svg></span>
+      <div class="dsh-kpis">
+        <a class="dsh-kpi" href="employee-complaints.html?status=Pending">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M7 2v4a5 5 0 0 0 10 0V2"/><path d="M7 22v-4a5 5 0 0 1 10 0v4"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Waiting for review</p>
-            <p class="ad-kpi-value" id="kpiPending">–</p>
-            <p class="ad-kpi-sub" id="kpiPendingSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Waiting for review</p>
+            <p class="dsh-kpi-value" id="kpiPending">–</p>
+            <p class="dsh-kpi-sub" id="kpiPendingSub">&nbsp;</p>
           </div>
         </a>
-        <a class="ad-kpi" href="employee-complaints.html?status=Reviewing">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+        <a class="dsh-kpi" href="employee-complaints.html?status=Reviewing">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Under review</p>
-            <p class="ad-kpi-value" id="kpiReviewing">–</p>
-            <p class="ad-kpi-sub">Complaints you're working on</p>
+            <p class="dsh-kpi-label">Under review</p>
+            <p class="dsh-kpi-value" id="kpiReviewing">–</p>
+            <p class="dsh-kpi-sub">Complaints you're working on</p>
           </div>
         </a>
-        <a class="ad-kpi" href="employee-complaints.html?status=Resolved">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></span>
+        <a class="dsh-kpi" href="employee-complaints.html?status=Resolved">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Resolved</p>
-            <p class="ad-kpi-value" id="kpiResolved">–</p>
-            <p class="ad-kpi-sub" id="kpiResolvedSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Resolved</p>
+            <p class="dsh-kpi-value" id="kpiResolved">–</p>
+            <p class="dsh-kpi-sub" id="kpiResolvedSub">&nbsp;</p>
           </div>
         </a>
-        <a class="ad-kpi" href="#gamesWithComplaints">
-          <span class="ad-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r="0.6" fill="currentColor"/><circle cx="17.5" cy="13" r="0.6" fill="currentColor"/></svg></span>
+        <a class="dsh-kpi" href="#gamesWithComplaints">
+          <span class="dsh-kpi-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r="0.6" fill="currentColor"/><circle cx="17.5" cy="13" r="0.6" fill="currentColor"/></svg></span>
           <div>
-            <p class="ad-kpi-label">Reported games</p>
-            <p class="ad-kpi-value" id="kpiGames">–</p>
-            <p class="ad-kpi-sub" id="kpiGamesSub">&nbsp;</p>
+            <p class="dsh-kpi-label">Reported games</p>
+            <p class="dsh-kpi-value" id="kpiGames">–</p>
+            <p class="dsh-kpi-sub" id="kpiGamesSub">&nbsp;</p>
           </div>
         </a>
       </div>
 
       <!-- games + analysis -->
-      <div class="ad-grid gd-grid">
+      <div class="dsh-grid gd-grid">
 
-        <article class="ad-card" id="gamesWithComplaints">
-          <header class="ad-card-head">
+        <article class="dsh-card" id="gamesWithComplaints">
+          <header class="dsh-card-head">
             <div>
               <h2>Games with complaints</h2>
               <p class="mini">Select a game to see its risk analysis</p>
             </div>
           </header>
-          <ul class="ad-list gd-games" id="gdGames">
-            <li class="ad-empty">Loading…</li>
+          <ul class="dsh-list gd-games" id="gdGames">
+            <li class="dsh-empty">Loading…</li>
           </ul>
           <button type="button" class="gd-more" id="gdMore" hidden></button>
         </article>
 
-        <article class="ad-card gd-analysis" id="gdAnalysis">
-          <div class="ad-empty">Select a game to see its analysis.</div>
+        <article class="dsh-card gd-analysis" id="gdAnalysis">
+          <div class="dsh-empty">Select a game to see its analysis.</div>
         </article>
 
       </div>
 
       <!-- trends -->
-      <div class="ad-grid ad-grid--charts">
+      <div class="dsh-grid dsh-grid--charts">
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
               <h2>Complaints over time</h2>
               <p class="mini">New complaints per week, last 8 weeks</p>
@@ -130,17 +130,17 @@
           <div class="gd-weeks" id="gdWeeks"></div>
         </article>
 
-        <article class="ad-card">
-          <header class="ad-card-head">
+        <article class="dsh-card">
+          <header class="dsh-card-head">
             <div>
               <h2>What users are reporting</h2>
               <p class="mini">Behaviors and seriousness across all complaints</p>
             </div>
           </header>
-          <div class="ad-bars" id="gdBehaviors"></div>
+          <div class="dsh-bars" id="gdBehaviors"></div>
           <p class="gd-label gd-sev-title">Seriousness</p>
-          <div class="ad-status-bar" id="gdSeverityBar"></div>
-          <ul class="ad-status-legend" id="gdSeverityLegend"></ul>
+          <div class="dsh-status-bar" id="gdSeverityBar"></div>
+          <ul class="dsh-status-legend" id="gdSeverityLegend"></ul>
         </article>
 
       </div>
@@ -167,11 +167,6 @@
       </h3>
 
 
-      <div class="social">
-        ○ □ △ ×
-      </div>
-
-
       <p class="mini">
 
         <a href="about.html">
@@ -192,9 +187,9 @@
        SCRIPTS
   ========================================== -->
 
-  <script src="js/common.js?v=10"></script>
+  <script src="js/common.js?v=13"></script>
 
-  <script src="js/government-dashboard.js?v=4"></script>
+  <script src="js/government-dashboard.js?v=30"></script>
 
 
 </body>

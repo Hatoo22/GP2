@@ -158,7 +158,7 @@ function displayGameComparison(selectedGames) {
       <a class="cmp-tile" href="game-details.html?game_id=${encodeURIComponent(g.game_id)}" style="--g:${g._color}">
         <span class="cmp-tile-img">${g.image_url ? `<img src="${cmpEsc(g.image_url)}" alt="" loading="lazy">` : ""}</span>
         <span class="cmp-tile-name"><i></i>${cmpEsc(g.game_name)}</span>
-        <strong style="color:${cmpRiskColor(r)}">${Math.round(r)}%</strong>
+        <strong style="color:${cmpRiskColor(r)}">${diraPct(r)}</strong>
         <span class="cmp-tile-level">${cmpEsc(g.overall_risk_level || "Low")} risk</span>
         ${safest ? `<em class="cmp-safest">Safest</em>` : ""}
       </a>`;
@@ -171,7 +171,7 @@ function displayGameComparison(selectedGames) {
       <span class="cmp-b-bars">
         ${games.map(g => {
           const v = weightedLabelPercent(g[key], g.comments_count, key);
-          return `<span class="cmp-bar" style="--g:${g._color}" title="${cmpEsc(g.game_name)}: ${Math.round(v)}%"><i style="--w:${v}%"></i><em>${Math.round(v)}%</em></span>`;
+          return `<span class="cmp-bar" style="--g:${g._color}" title="${cmpEsc(g.game_name)}: ${diraPct(v)}"><i style="--w:${v}%"></i><em>${diraPct(v)}</em></span>`;
         }).join("")}
       </span>
     </li>`).join("");

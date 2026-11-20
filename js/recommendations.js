@@ -53,7 +53,7 @@
     $("rxFromImg").src = current.image_url || "images/default-game.jpg";
     $("rxFromName").textContent = current.game_name || "This game";
     const r = risk(current);
-    $("rxFromRisk").innerHTML = `<b style="color:${color(r)}">${Math.round(r)}% risk</b> · ${esc(levelOf(current))} · ${esc(genres(current.genre).join(", "))}`;
+    $("rxFromRisk").innerHTML = `<b style="color:${color(r)}">${diraPct(r)} risk</b> · ${esc(levelOf(current))} · ${esc(genres(current.genre).join(", "))}`;
     $("rxBack").href = `game-details.html?game_id=${encodeURIComponent(current.game_id)}`;
     document.title = `Safer than ${current.game_name} | DIR'A`;
   }
@@ -71,7 +71,7 @@
               <strong>${esc(g.game_name)}</strong>
               <small>${same.length ? `Also ${esc(same.slice(0, 2).join(" · "))}` : esc(genres(g.genre).slice(0, 2).join(" · "))}</small>
             </span>
-            <span class="rx-drop" title="${drop} points lower risk">${drop > 0 ? `↓ ${drop}%` : `${Math.round(risk(g))}%`}</span>
+            <span class="rx-drop" title="${drop} points lower risk">${drop > 0 ? `↓ ${drop}%` : `${diraPct(risk(g))}`}</span>
           </button>
         </li>`;
     }).join("");
@@ -90,8 +90,8 @@
         <li>
           <span class="rx-b-label">${label}</span>
           <span class="rx-b-bars">
-            <span class="rx-bar rx-bar--from"><i style="--w:${a}%"></i><em>${Math.round(a)}%</em></span>
-            <span class="rx-bar rx-bar--to"><i style="--w:${b}%"></i><em>${Math.round(b)}%</em></span>
+            <span class="rx-bar rx-bar--from"><i style="--w:${a}%"></i><em>${diraPct(a)}</em></span>
+            <span class="rx-bar rx-bar--to"><i style="--w:${b}%"></i><em>${diraPct(b)}</em></span>
           </span>
         </li>`;
     }).join("");
@@ -109,12 +109,12 @@
       <div class="rx-c-score">
         <div class="rx-score">
           <span>${esc(current.game_name)}</span>
-          <strong style="color:${color(rc)}">${Math.round(rc)}%</strong>
+          <strong style="color:${color(rc)}">${diraPct(rc)}</strong>
         </div>
         <div class="rx-arrow" aria-hidden="true">→</div>
         <div class="rx-score rx-score--to">
           <span>${esc(g.game_name)}</span>
-          <strong style="color:${color(rg)}">${Math.round(rg)}%</strong>
+          <strong style="color:${color(rg)}">${diraPct(rg)}</strong>
         </div>
         <p class="rx-verdict">${drop > 0
           ? `<b>${drop} points lower risk</b>${same.length ? `, and it's also ${esc(same.join(", "))}.` : "."}`

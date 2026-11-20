@@ -153,7 +153,7 @@ function renderDetailPills(game, isNew) {
 
   box.innerHTML = isNew
     ? `<span class="pill new-pill">New</span>`
-    : `<span class="pill">${game.overall_risk_percent ?? 0}% Risk</span>
+    : `<span class="pill">${diraPct(game.overall_risk_percent)} Risk</span>
        <span class="pill ${riskClass}">${level}</span>`;
 }
 
@@ -195,7 +195,7 @@ function renderRisk(game) {
       ring.style.strokeDashoffset = `${c * (1 - Math.min(overall, 100) / 100)}`;
     }));
   }
-  setText("overallRiskPercent", `${Math.round(overall)}%`);
+  setText("overallRiskPercent", diraPct(overall));
   const levelEl = document.getElementById("overallRiskLevel");
   if (levelEl) { levelEl.textContent = `${level} risk`; levelEl.style.color = color; }
 
@@ -213,7 +213,7 @@ function renderRisk(game) {
       <li>
         <div class="gx-bar-top">
           <span><b>${r.label}</b><small>${r.hint}</small></span>
-          <strong style="color:${getRiskColor(r.value)}">${Math.round(r.value)}%</strong>
+          <strong style="color:${getRiskColor(r.value)}">${diraPct(r.value)}</strong>
         </div>
         <div class="gx-bar"><i style="--w:${Math.min(r.value, 100)}%; --c:${getRiskColor(r.value)}"></i></div>
       </li>`).join("");
@@ -223,9 +223,14 @@ function renderRisk(game) {
   const top = rows[0];
   const verdict = document.getElementById("riskVerdict");
   if (verdict) {
-    verdict.textContent = top && top.value > 0
-      ? `${top.label} is the most common problem in this community.`
-      : "Players rarely report harmful behavior here.";
+    // a low-risk game shouldn't sound like it has a problem
+    if (!top || top.value <= 0) {
+      verdict.textContent = "Players rarely run into harmful behavior here.";
+    } else if (overall < 31) {
+      verdict.textContent = `Low risk overall. The little that shows up is mostly ${top.label.toLowerCase()}.`;
+    } else {
+      verdict.textContent = `${top.label} is the most common problem in this community.`;
+    }
   }
 }
 

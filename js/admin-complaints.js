@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const severityPill = (sev) => {
     const s = normSeverity(sev);
     if (!s) return `<span class="ag-muted">—</span>`;
-    return `<span class="ad-pill" style="--c:${SEVERITY_COLORS[s] || "#94a3b8"}">${escapeHtml(s.charAt(0).toUpperCase() + s.slice(1))}</span>`;
+    return `<span class="dsh-pill" style="--c:${SEVERITY_COLORS[s] || "#94a3b8"}">${escapeHtml(s.charAt(0).toUpperCase() + s.slice(1))}</span>`;
   };
 
   const statusPill = (st) => {
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tableBody.innerHTML = slice.length
       ? slice.map(rowHtml).join("")
-      : `<tr><td colspan="6" class="ad-empty">${complaints.length ? "No complaints match your filters." : "No complaints yet 🎉"}</td></tr>`;
+      : `<tr><td colspan="6" class="dsh-empty">${complaints.length ? "No complaints match your filters." : "No complaints yet 🎉"}</td></tr>`;
 
     showing.textContent = list.length
       ? `Showing ${start + 1}–${start + slice.length} of ${nf.format(list.length)} complaints`
@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
       render();
     } catch (err) {
       console.error(err);
-      tableBody.innerHTML = `<tr><td colspan="6" class="ad-empty">Unable to load complaints.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" class="dsh-empty">Unable to load complaints.</td></tr>`;
     }
   })();
 });
