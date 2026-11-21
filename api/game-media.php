@@ -21,7 +21,7 @@ $appId = preg_replace('/\D/', '', (string)($row['api_game_id'] ?? ''));
 if ($appId === '' && preg_match('#/apps/(\d+)/#', (string)($row['image_url'] ?? ''), $m)) $appId = $m[1];
 if ($appId === '') out(['success' => true, 'video' => null, 'poster' => null, 'shots' => []]);
 
-$cacheFile = rtrim(sys_get_temp_dir(), '/\\') . "/dira-media-$appId.json";
+$cacheFile = rtrim(sys_get_temp_dir(), '/\\') . "/dira-media2-$appId.json";
 if (is_file($cacheFile) && filemtime($cacheFile) > time() - 86400) {
     $cached = json_decode((string)file_get_contents($cacheFile), true);
     if (is_array($cached)) out($cached);
@@ -40,6 +40,17 @@ $video = null;
 $type = null;
 $poster = null;
 $movies = $info['movies'] ?? [];
+
+// Steam content descriptors: 1 = some nudity or sexual content, 3 = adult only sexual content,
+// 4 = frequent nudity or sexual content. For these games the home page shows only the
+// store's cover art: no trailer, no screenshots.
+$descIds = array_map('intval', (array)($info['content_descriptors']['ids'] ?? []));
+if (array_intersect($descIds, [1, 3, 4])) {
+    $cover = isset($info['header_image']) ? preg_replace('#^http://#', 'https://', $info['header_image']) : null;
+    $result = ['success' => true, 'video' => null, 'type' => null, 'poster' => $cover ?: ($row['image_url'] ?? null), 'shots' => [], 'safe_mode' => true];
+    @file_put_contents($cacheFile, json_encode($result, JSON_UNESCAPED_SLASHES));
+    out($result);
+}
 // the "highlight" trailer is the store's main one
 usort($movies, fn($a, $b) => (int)!empty($b['highlight']) <=> (int)!empty($a['highlight']));
 foreach ($movies as $m) {
