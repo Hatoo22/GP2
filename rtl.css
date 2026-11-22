@@ -1,0 +1,78 @@
+/* =========================================================
+   Arabic (right-to-left) adjustments.
+   Everything here only applies when the Arabic language is on
+   (js/i18n.js sets <html lang="ar" dir="rtl">), so the English
+   site is not affected.
+========================================================= */
+
+/* ---------- the language button (both languages) ---------- */
+.langSwitch {
+  font-family: "IBM Plex Sans Arabic", Inter, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+}
+.langSwitch[lang="en"] { font-family: Inter, Arial, sans-serif; font-size: 13px; letter-spacing: .02em; }
+
+/* ---------- Arabic font ---------- */
+html[lang="ar"] body,
+html[lang="ar"] button,
+html[lang="ar"] input,
+html[lang="ar"] select,
+html[lang="ar"] textarea,
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3,
+html[lang="ar"] h4, html[lang="ar"] h5, html[lang="ar"] h6 {
+  font-family: "IBM Plex Sans Arabic", Inter, Arial, sans-serif;
+}
+
+/* Arabic letters are joined, so spacing between letters breaks the words;
+   capital letters and italics don't exist in Arabic either */
+html[lang="ar"] *:not(.langSwitch) {
+  letter-spacing: 0 !important;
+}
+html[lang="ar"] em,
+html[lang="ar"] i:not([class]) { font-style: normal; }
+
+/* Arabic needs a little more room between lines */
+html[lang="ar"] p,
+html[lang="ar"] li,
+html[lang="ar"] small,
+html[lang="ar"] .mini { line-height: 1.75; }
+html[lang="ar"] h1,
+html[lang="ar"] h2 { line-height: 1.35; }
+
+/* English text inside Arabic pages (game names, descriptions, what users wrote)
+   keeps its own direction, so "A MOBA." doesn't turn into ".A MOBA" */
+html[dir="rtl"] [dir="auto"],
+html[dir="rtl"] span[dir="ltr"], html[dir="rtl"] small[dir="ltr"], html[dir="rtl"] strong[dir="ltr"] { text-align: right; }
+
+/* emails, numbers with signs, percentages and Latin codes stay left-to-right */
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] input[type="url"] { direction: ltr; text-align: right; }
+html[dir="rtl"] input[type="email"]::placeholder,
+html[dir="rtl"] input[type="password"]::placeholder { direction: rtl; }
+html[dir="rtl"] .mh-stat-num { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+/* ---------- game carousels: keep the scrolling engine left-to-right,
+   but each card reads right-to-left ---------- */
+html[dir="rtl"] .marquee-shell,
+html[dir="rtl"] .marquee-wrap { direction: ltr; }
+html[dir="rtl"] .marquee-track > * { direction: rtl; }
+
+/* arrows that point "forward" */
+html[dir="rtl"] .rx-arrow { transform: scaleX(-1); }
+html[dir="rtl"] .marquee-arrow--prev { left: -8px; right: auto; }
+html[dir="rtl"] .marquee-arrow--next { right: -8px; left: auto; }
+@media (max-width: 760px) {
+  html[dir="rtl"] .marquee-arrow--prev { left: -4px; right: auto; }
+  html[dir="rtl"] .marquee-arrow--next { right: -4px; left: auto; }
+}
+
+/* "→" inside the main form buttons points the reading direction */
+html[dir="rtl"] .authSubmit span { display: inline-block; transform: scaleX(-1); }
+
+/* names in bold inside Arabic sentences are kept as one unit, so their
+   numbers and brackets don't jump around */
+html[dir="rtl"] b,
+html[dir="rtl"] strong { unicode-bidi: isolate; }
