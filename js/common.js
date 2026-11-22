@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .forEach(el => el.textContent = new Date().getFullYear());
 
   document.querySelectorAll('a').forEach(link => {
-    if (link.textContent.trim().toLowerCase() === 'log out') {
+    if (['log out', 'تسجيل الخروج'].includes(link.textContent.trim().toLowerCase())) {
       link.addEventListener('click', () => {
         localStorage.removeItem('diraUser');
       });

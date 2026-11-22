@@ -29,7 +29,7 @@ function applyRoleNav(role) {
   const cfg = ROLE_NAV[role] || ROLE_NAV.individual;
   const nav = document.getElementById("profileNavLinks");
   if (nav) {
-    const themeIcon = nav.querySelector("button.icon")?.textContent.trim() || "🌙";
+    const themeIcon = nav.querySelector('button[onclick="toggleTheme()"]')?.textContent.trim() || "🌙";
     const avatarIcon = nav.querySelector(".profileIcon")?.textContent.trim() || "👤";
     nav.innerHTML =
       cfg.links.map(([href, text]) => `<a href="${href}">${text}</a>`).join("") +

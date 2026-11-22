@@ -216,7 +216,7 @@
     if (r !== "individual" && r !== "employee") return;
     // only on signed-in pages (the top bar has "Log out"); the public pages keep Sign in / Register
     const hasLogout = [...document.querySelectorAll(".nav .links a")]
-      .some((a) => a.classList.contains("logoutLink") || a.textContent.trim().toLowerCase() === "log out");
+      .some((a) => a.classList.contains("logoutLink") || ["log out", "تسجيل الخروج"].includes(a.textContent.trim().toLowerCase()));
     if (!hasLogout) return;
 
     bellButton();
